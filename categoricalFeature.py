@@ -4,6 +4,7 @@ class CategoricalFeature(feature.Feature):
         feature.Feature.__init__(name, values)
         self.__setBreeds__(values)
     def __setBreeds__(self, values): # visitor pattern
+        breeds = []
         pass
     def isValueOfBreed(self, str, value): # visitor pattern
         return str == value
