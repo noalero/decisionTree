@@ -1,4 +1,5 @@
 import feature
+import range
 class NumericalFeature(feature.Feature):
     def __init__(self, name, index, values):
         feature.Feature.__init__(name, index, values)
