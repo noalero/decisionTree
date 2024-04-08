@@ -1,6 +1,7 @@
 import breed
 class Leaf(breed.Breed):
-    def __init__(self, name, dataPath, answer):
+    # answer = Null
+    def __init__(self, name, dataPath):
         breed.Breed.__init__(name, dataPath)
     def __setAnswer__(self, answer):
         self.answer = answer
