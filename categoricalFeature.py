@@ -3,8 +3,8 @@ import feature
 
 class CategoricalFeature(feature.Feature):
 
-    def __init__(self, name, index, values, n_breeds) -> None:
-        feature.Feature.__init__(self, name, index, values, n_breeds)
+    def __init__(self, name, values, n_breeds) -> None:
+        feature.Feature.__init__(self, name, values, n_breeds)
         self.__set_breeds__(values, n_breeds)
 
     def __set_breeds__(self, values, n_breeds) -> None:  # visitor pattern
