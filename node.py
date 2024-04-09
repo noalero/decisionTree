@@ -2,25 +2,25 @@ import numpy as np
 
 import dataPath
 import feature
-import numericalFeature
-import categoricalFeature
+# import numericalFeature
+# import categoricalFeature
 import breed
-import leaf
-import parent
+# import leaf
+# import parent
 
 
 class Node(object):
-    def __init__(self, feature, datapath) -> None:
+    def __init__(self, feature_, datapath_) -> None:
         pass
 
-    def __set_feature__(self, feature) -> None:
-        self.feature = feature
+    def __set_feature__(self, feature_) -> None:
+        self.feature = feature_
 
     def get_feature(self) -> feature.Feature:
         return self.feature
 
-    def __set_datapath__(self, datapath) -> None:
-        self.datapath = datapath
+    def __set_datapath__(self, datapath_) -> None:
+        self.datapath = datapath_
 
     def get_datapath(self) -> dataPath.DataPath:
         return self.datapath
@@ -44,7 +44,7 @@ class Node(object):
     def get_child(self, breed_name) -> breed.Breed:
         pass
 
-    def add_child(self, breed, datapath, arg) -> None:
+    def add_child(self, breed_, datapath_, arg) -> None:
         pass
         # create parent / lead, visitor pattern
 
@@ -59,7 +59,8 @@ class Node(object):
         entropy = (pos_p * log_pos_p + neg_p * log_neg_p) * (-1.)
         return entropy
 
-    def __calc_p__(self, total, some) -> float:
+    @staticmethod
+    def __calc_p__(total, some) -> float:
         return some / total
 
     def e_parent_feature(self, breeds) -> float:
@@ -72,15 +73,20 @@ class Node(object):
         e_parent = 0.
         for exp in expectations:
             e_parent += exp
-        eParent = e_parent / total_sum
+        e_parent = e_parent / total_sum
         return e_parent
 
     def __calc_information_gain__(self, breeds, total) -> float:
-        entropy = self.__calc_entropy__()
-        pass
+        # ToDo
+        pos = 0.0
+        neg = 0.0
+        entropy = self.__calc_entropy__(total, pos, neg)
+        return 0.0
 
     def __set_information_gain__(self) -> None:
         pass
 
-    def get_information_gain(self) -> float:
-        return self.information_gain
+    @staticmethod
+    def get_information_gain() -> float:
+        # ToDo
+        return 0.0  # self.information_gain
