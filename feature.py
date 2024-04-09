@@ -6,7 +6,7 @@ class Feature(object):
     def __init__(self, name, index, values) -> None:
         self.__set_name__(name)
         self.__set_index__(index)
-        self.__set_breeds__(values)
+        # self.__set_breeds__(values)
 
     def __set_name__(self, name) -> None:
         self.name = name
