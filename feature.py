@@ -1,49 +1,30 @@
+import string
 import numpy as np
 class Feature(object):
-    def __init__(self, name, index, values):
-        self.__setName__(name)
-        self.__setIndex__(index)
-        self.__setBreeds__(values)
-    def __setName__(self, name):
+
+    def __init__(self, name, index, values) -> None
+        self.__set_name__(name)
+        self.__set_index__(index)
+        self.__set_breeds__(values)
+
+    def __set_name__(self, name) -> None:
         self.name = name
-    def getName(self):
+
+    def get_name(self) -> string:
         return self.name
-    def __setIndex__(self, index):
+
+    def __set_index__(self, index) -> None:
         self.index = index
-    def getIndex(self):
+
+    def get_index(self) -> int:
         return self.index
-    def __setBreeds__(self, values): # visitor pattern
-        pass
-    def getBreeds(self):
-        return self.breeds
-    def isValueOfBreed(self, breed, value): # visitor pattern
+
+    def __set_breeds__(self, values) -> None: # visitor pattern
         pass
 
-    # def __calcEntropy__(self, total, pos, neg):
-    #     posP = self.__calcP__(total, pos)
-    #     negP = self.__calcP__(total, neg)
-    #     logPosP = np.log(posP)
-    #     logNegP = np.log(negP)
-    #     entropy = (posP * logPosP + negP * logNegP) * (-1.)
-    #     return entropy
-    # def __calcP__(self, total, some):
-    #     return some / total
-    # def EParentFeature(self, breeds):
-    #     expectations = []
-    #     totalSum = 0
-    #     for total, pos, neg in breeds:
-    #         exp = self.__calcEntropy__(total, pos, neg)
-    #         expectations.append(exp * total)
-    #         totalSum += total
-    #     eParent = 0.
-    #     for exp in expectations:
-    #         eParent += exp
-    #     eParent = eParent / totalSum
-    #     return eParent
-    # def __calcInformationGaine__(self, breeds, total):
-    #     entropy = self.__calcEntropy__()
-    #     pass
-    # def __setInformationGane__(self):
-    #     pass
-    # def getInformationGaine(self):
-    #     return self.informationGaine
+    def get_breeds(self) -> list:
+        return self.breeds
+
+    def is_value_of_breed(self, breed, value) -> bool: # visitor pattern
+        pass
+
