@@ -1,8 +1,9 @@
 import string
-import numpy as np
-class Feature(object):
+# import numpy as np
 
-    def __init__(self, name, index, values) -> None
+
+class Feature(object):
+    def __init__(self, name, index, values) -> None:
         self.__set_name__(name)
         self.__set_index__(index)
         self.__set_breeds__(values)
@@ -19,12 +20,13 @@ class Feature(object):
     def get_index(self) -> int:
         return self.index
 
-    def __set_breeds__(self, values) -> None: # visitor pattern
+    def __set_breeds__(self, values) -> None:  # visitor pattern
         pass
 
-    def get_breeds(self) -> list:
-        return self.breeds
+    @staticmethod
+    def get_breeds() -> list:
+        # ToDo
+        return []  # self.breeds
 
-    def is_value_of_breed(self, breed, value) -> bool: # visitor pattern
+    def is_value_of_breed(self, breed, value) -> bool:  # visitor pattern
         pass
-
