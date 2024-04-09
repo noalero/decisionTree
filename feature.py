@@ -3,10 +3,10 @@ import string
 
 
 class Feature(object):
-    def __init__(self, name, index, values) -> None:
+    def __init__(self, name, index, values, n_breeds) -> None:
         self.__set_name__(name)
         self.__set_index__(index)
-        # self.__set_breeds__(values)
+        # self.__set_breeds__(values,n_breeds)
 
     def __set_name__(self, name) -> None:
         self.name = name
@@ -20,7 +20,7 @@ class Feature(object):
     def get_index(self) -> int:
         return self.index
 
-    def __set_breeds__(self, values) -> None:  # visitor pattern
+    def __set_breeds__(self, values, n_breeds) -> None:  # visitor pattern
         pass
 
     @staticmethod
