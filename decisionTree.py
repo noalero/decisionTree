@@ -9,7 +9,7 @@ import dataPath
 
 
 class DecisionTree(object):
-    def __init__(self) -> None:
+    def __init__(self, dataset) -> None:
         # for each feature optional variable: n_breeds
         pass
 
