@@ -6,12 +6,14 @@ import breed
 import leaf
 import parent
 import dataPath
+import psycopg2
 
 
 class DecisionTree(object):
     def __init__(self, dataset) -> None:
         # for each feature optional variable: n_breeds
-        pass
+        # Connect to database:
+        self.conn = psycopg2.connect(dbname="DecisionTreeTrial", user="NoaLeron", password="tsmOn8tln", host="localhost")
 
     def __set_features__(self) -> None:
         pass
@@ -33,7 +35,7 @@ class DecisionTree(object):
         n = node.Node(fe, de)
         return n   # self.root
 
-    def __create_database__(self) -> None:
+    def __create_database__(self, dataset) -> None:
         # ToDo return value
         pass
 
