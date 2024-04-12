@@ -13,7 +13,10 @@ class DecisionTree(object):
     def __init__(self, dataset) -> None:
         # for each feature optional variable: n_breeds
         # Connect to database:
-        self.conn = psycopg2.connect(dbname="DecisionTreeTrial", user="NoaLeron", password="tsmOn8tln", host="localhost")
+        self.conn = psycopg2.connect(dbname="DecisionTreeTrial",
+                                     user="NoaLeron",
+                                     password="tsmOn8tln",
+                                     host="localhost")
 
     def __set_features__(self) -> None:
         pass
