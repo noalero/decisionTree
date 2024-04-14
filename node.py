@@ -7,12 +7,14 @@ import feature
 import breed
 # import leaf
 # import parent
+import decisionTree
 
 
 class Node(object):
-    def __init__(self, feature_, datapath_) -> None:
-        # ToDo
-        pass
+    def __init__(self, tree, feature_, datapath_) -> None:
+        self.__set_tree__(tree)
+        self.__set_feature__(feature_)
+        self.__set_datapath__(datapath_)
 
 # getters & setters of class attributes:
     # feature:
@@ -36,6 +38,12 @@ class Node(object):
     def get_num_of_children(self) -> int:
         return self.num_of_children
 
+    # tree:
+    def __set_tree__(self, tree) -> None:
+        self.tree = tree
+
+    def get_tree(self) -> decisionTree.DecisionTree:
+        return self.tree
     # children:
     def __set_children__(self) -> None:
         # ToDo
@@ -49,7 +57,7 @@ class Node(object):
 #
     def __set_child__(self, child) -> None:
         # ToDo
-        # __create_child__ or __add_child__ ?
+        # __create_child__ ?
         pass
 
     def get_child(self, breed_name) -> breed.Breed:
