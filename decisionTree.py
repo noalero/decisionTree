@@ -7,6 +7,7 @@ import leaf
 import parent
 import dataPath
 import psycopg2
+import numpy as np
 
 
 class DecisionTree(object):
@@ -90,6 +91,47 @@ class DecisionTree(object):
         # ToDo
         # database insert
         pass
+
+# calculations related methods:
+    def __calc_entropy__(self, total, pos, neg) -> float:
+        pos_p = self.__calc_p__(total, pos)
+        neg_p = self.__calc_p__(total, neg)
+        log_pos_p = np.log(pos_p)
+        log_neg_p = np.log(neg_p)
+        entropy = (pos_p * log_pos_p + neg_p * log_neg_p) * (-1.)
+        return entropy
+
+    @staticmethod
+    def __calc_p__(total, some) -> float:
+        return some / total
+
+    def e_parent_feature(self, breeds) -> float:
+        expectations = []
+        total_sum = 0
+        for total, pos, neg in breeds:
+            exp = self.__calc_entropy__(total, pos, neg)
+            expectations.append(exp * total)
+            total_sum += total
+        e_parent = 0.
+        for exp in expectations:
+            e_parent += exp
+        e_parent = e_parent / total_sum
+        return e_parent
+
+    def __calc_information_gain__(self, breeds, total) -> float:
+        # ToDo
+        pos = 0.0
+        neg = 0.0
+        entropy = self.__calc_entropy__(total, pos, neg)
+        return 0.0
+
+    def __set_information_gain__(self) -> None:
+        pass
+
+    @staticmethod
+    def get_information_gain() -> float:
+        # ToDo
+        return 0.0  # self.information_gain
 
 
 
