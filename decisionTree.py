@@ -8,6 +8,7 @@ import parent
 import dataPath
 import psycopg2
 import numpy as np
+import pandas as pd
 
 
 class DecisionTree(object):
@@ -67,8 +68,13 @@ class DecisionTree(object):
         # ToDo return value
         pass
 
-    def __create_trainingdata_primary_table__(self) -> None:
+    def __create_trainingdata_primary_table__(self, data_frame) -> None:
         # ToDo return value
+        data_frame.to_sql("primary", con=self.conn, if_exists='replace')  # add dtype?
+        pass
+
+    def select_from_primary_table(self, columns, wheres):
+        # ToDo
         pass
 
     def __create_feature_type_table__(self) -> None:
