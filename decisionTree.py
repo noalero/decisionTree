@@ -9,34 +9,40 @@ import dataPath
 import psycopg2
 import numpy as np
 import pandas as pd
+import sqlalchemy as sa
 
 
 class DecisionTree(object):
-    def __init__(self, dataset) -> None:
+    def __init__(self, dataframe, class_index, n_breeds=7) -> None:
         # ToDo
         # for each feature optional variable: n_breeds
         # Connect to database:
-        self.conn = psycopg2.connect(dbname="DecisionTreeTrial",
-                                     user="NoaLeron",
-                                     password="tsmOn8tln",
-                                     host="localhost")
-        self.__set_features__(dataset)
+        database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/DecisionTree"
+        self.__set_dataframe__(dataframe)
+        self.__set_class_index__(class_index)
+        self.__set_engine__(database_url)
+        self.__set_features__(n_breeds)
+        self.__create_feature_types_list__()
+        self.__create_database__()
         self.__set_root__()
 
 # getters & setters of class attributes:
     # features:
-    def __set_features__(self, dataset) -> None:
-        # ToDo
+    def __set_features__(self, n_breeds) -> None:
+        # ToDo: check [dataframe_columns] type
+        dataframe_columns = list[self.dataframe.columns]
         self.features = []
+        for col in dataframe_columns:
+            self.__add_feature__(col, n_breeds)
 
     @staticmethod
     def get_features(self) -> list:
-        # ToDo
         return self.features
 
-    def __set_feature__(self) -> None:
-        # ToDo
-        pass
+    def __add_feature__(self, column_name, n_breeds) -> None:
+        values = self.dataframe.get(column_name)
+        feat = feature.Feature(column_name, values, n_breeds)
+        self.features.append(feat)
 
     # root:
     def __set_root__(self) -> None:
@@ -53,7 +59,6 @@ class DecisionTree(object):
 
     # feature_types_list
     def __create_feature_types_list__(self) -> None:
-        # Should be in __init__ instead?
         self.feature_types_list = []
 
     def get_feature_types_list(self) -> list:
@@ -63,22 +68,56 @@ class DecisionTree(object):
     def add_feature_types_list(self, feature_type) -> None:
         self.feature_types_list.append(feature_type)
 
+    # engine:
+    def __set_engine__(self, database_url):
+        self.engine = sa.create_engine(database_url)
+
+    def __get_engine__(self):
+        return self.engine
+
+    # data_frame:
+    def __set_dataframe__(self, df) -> None:
+        self.dataframe = df
+
+    def get_dataframe(self) -> pd.DataFrame:
+        return self.dataframe
+
+    # class_index:
+    def __set_class_index__(self, class_index) -> None:
+        self.class_index = class_index
+
+    def get_class_index(self) -> int:
+        return self.class_index
+
 # database related methods:
-    def __create_database__(self, dataset) -> None:
+    def __create_database__(self) -> None:
         # ToDo return value
-        pass
+        self.__create_trainingdata_primary_table__()
+        self.__create_feature_type_table__()
+        self.__create_result_table__()
 
-    def __create_trainingdata_primary_table__(self, data_frame) -> None:
-        # ToDo return value
-        data_frame.to_sql("primary", con=self.conn, if_exists='replace')  # add dtype?
-        pass
+    def __create_trainingdata_primary_table__(self) -> None:
+        self.dataframe.to_sql(
+            "TrainingDataPrimaryTable", con=self.engine, index=True, index_label='index', if_exists='replace')
 
-    def select_from_primary_table(self, columns, wheres):
-        # ToDo
-        pass
+    def select_from_primary_table(self, columns, wheres) -> list:
+        # ToDo: return type?
+        column_names = ', '.join(map(lambda x: f'"{x}"', columns))
+        wheres_names = ' AND '.join(map(lambda where: f'"{where[0]}" = {where[1]}', wheres))
+        select_command = sa.text(f'''SELECT {column_names} FROM "TrainingDataPrimaryTable" WHERE {wheres_names}''')
+        with self.engine.connect() as connection:
+            result = connection.execute(select_command)
+            connection.commit()
+            connection.close()
+        ans = result.fetchall()
+        return ans
 
     def __create_feature_type_table__(self) -> None:
-        # ToDo return value
+        # ToDo
+        class_feature = self.features[self.class_index]
+        classes = class_feature.get_breeds()
+        index = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+        feature_type = sa.Column(sa.ClauseList)  # find best type
         pass
 
     def insert_feature_type_table(self, feature_type) -> None:
@@ -88,9 +127,6 @@ class DecisionTree(object):
     def __create_result_table__(self) -> None:
         # ToDo
         self.result_table = []  # database create
-        for featype in self.feature_types_list:
-            self.insert_result_table(featype.rule_id, featype.classes_item_percentage_list)
-            pass
 
     def insert_result_table(self, rule_id, classes_item_percentage_list) -> None:
         # ToDo
