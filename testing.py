@@ -2,6 +2,10 @@ import numpy as np
 import psycopg2
 import pandas as pd
 import sqlite3
+import sqlalchemy as sa
+# from sqlalchemy import create_engine
+# from sqlalchemy import text
+# from sqlalchemy import insert
 
 
 # entropy:
@@ -71,50 +75,49 @@ def main_entropy() -> None:
 
 
 # database:
-def create_table_from_dataframe(conn) -> None:
-    df = pd.DataFrame({
-        'id': [1, 2, 3, 4],
-        'name': ["Apple", "Banana", "Cherry", "Orange"],
-        'amount': [3, 10, 5, 7]
-    })
-    table_name = 'fruits'
-    print("before to_sql")
-    df.to_sql(table_name, con=conn, if_exists='append')
-    print("after to_sql")
+def create_table_from_dataframe(engine, df, table_name) -> None:
+    df.to_sql(table_name, con=engine, index=True, index_label='index', if_exists='replace')
 
 
-def insert_into_table(conn, crsr, table_name, values) -> None:
-    insert_command = f'''INSERT INTO "{table_name}" VALUES ({values[0]}, "{values[1]}", {values[2]}'''
-    crsr.execute(insert_command)
-    conn.commit()
+def insert_into_table(engine, table_name, values, columns) -> None:
+    column_names = ', '.join([f'"{col}"' for col in columns])
+    value_names = ', '.join([f'{val}' for val in values])
+    get_max_command = sa.text(f'''SELECT MAX(\"index\") FROM {table_name}''')
+    with engine.connect() as connection:
+        max_index_result = connection.execute(get_max_command)
+        max_index = max_index_result.scalar()
+        next_index = max_index + 1 if max_index is not None else 0
+    insert_command = sa.text(f'''INSERT INTO {table_name} (\"index\", {column_names}) VALUES ({next_index}, {value_names})''')
+    with engine.connect() as connection:
+        result = connection.execute(insert_command)
+        connection.commit()
 
 
-def select_from_table(conn, crsr, table_name, columns, wheres) -> list:
+def select_from_table(engine, table_name, columns, wheres) -> list:
     column_names = ', '.join(map(lambda x: f'"{x}"', columns))
-    wheres_names = 'AND '.join(map(lambda col, val: f'"{col}" = {val}'))
-    select_command = f'''SELECT {column_names} FROM "{table_name}" WHERE {wheres_names}'''
-    crsr.execute(select_command)
-    conn.commit()
-    return crsr.fetchall()
+    wheres_names = ' OR '.join(map(lambda where: f'"{where[0]}" = {where[1]}', wheres))
+    select_command = sa.text(f'''SELECT {column_names} FROM "{table_name}" WHERE {wheres_names}''')
+    with engine.connect() as connection:
+        result = connection.execute(select_command)
+        connection.commit()
+    ans = result.fetchall()
+    return ans
 
 
 def main_database() -> None:
-    conn = psycopg2.connect(dbname="Testing",
-                     user="NoaLeron",
-                     password="tsmOn8tln",
-                     host="localhost")
-    print("after connection")
-    crsr = conn.cursor()
-    print("after cursor")
-    create_table_from_dataframe(conn)
-    print("after creation")
-    insert_into_table(conn, crsr, 'fruits', [5, 'Grape', 1])
-    print("after insertion")
-    select_from_table(conn, crsr, 'fruits', ['name', 'amount'], [('id', 3), ('id', 5)])
-    print("after selection")
-    conn.close()
-    print("after closing")
-
+    database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/TestingDT"
+    engine = sa.create_engine(database_url)
+    df = pd.DataFrame({
+        'id': [1, 2, 3, 4],
+        'name': ['Apple', 'Banana', 'Cherry', 'Orange'],
+        'amount': [3, 10, 5, 7]
+    })
+    table_name = 'fruits'
+    create_table_from_dataframe(engine, df, table_name)
+    df_columns = list(df.columns)
+    insert_into_table(engine, "fruits", [5, "'Grape'", 1], df_columns)
+    selected = select_from_table(engine, 'fruits', ['name', 'amount'], [('id', 3), ('id', 5)])
+    print(selected)
 
 
 def main() -> None:
