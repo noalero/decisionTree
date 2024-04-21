@@ -6,10 +6,13 @@ import breed
 import leaf
 import parent
 import dataPath
+import feature_type
+
 import psycopg2
 import numpy as np
 import pandas as pd
 import sqlalchemy as sa
+from sqlalchemy.orm import declarative_base
 
 
 class DecisionTree(object):
@@ -75,6 +78,13 @@ class DecisionTree(object):
     def __get_engine__(self):
         return self.engine
 
+    # session:
+    def __set_session__(self) -> None:
+        self.session = sa.orm.sessionmaker(bind=self.engine)
+
+    def get_session(self) -> sa.orm.sessionmaker:
+        return self.session
+
     # data_frame:
     def __set_dataframe__(self, df) -> None:
         self.dataframe = df
@@ -100,8 +110,7 @@ class DecisionTree(object):
         self.dataframe.to_sql(
             "TrainingDataPrimaryTable", con=self.engine, index=True, index_label='index', if_exists='replace')
 
-    def select_from_primary_table(self, columns, wheres) -> list:
-        # ToDo: return type?
+    def select_from_primary_table(self, columns, wheres) -> sa.Sequence:
         column_names = ', '.join(map(lambda x: f'"{x}"', columns))
         wheres_names = ' AND '.join(map(lambda where: f'"{where[0]}" = {where[1]}', wheres))
         select_command = sa.text(f'''SELECT {column_names} FROM "TrainingDataPrimaryTable" WHERE {wheres_names}''')
@@ -113,16 +122,25 @@ class DecisionTree(object):
         return ans
 
     def __create_feature_type_table__(self) -> None:
-        # ToDo
-        class_feature = self.features[self.class_index]
-        classes = class_feature.get_breeds()
-        index = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-        feature_type = sa.Column(sa.ClauseList)  # find best type
-        pass
+        feature_type.Base.metadata.create_all(self.engine)
 
-    def insert_feature_type_table(self, feature_type) -> None:
-        # ToDo
-        pass
+    def insert_feature_type_table(self, featype, featype_val) -> None:
+        session = self.session()
+        new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
+        session.add(new_row)
+        session.commit()
+        session.close()
+
+    def select_feature_type_table(self, columns, wheres) -> sa.Sequence:
+        column_names = ', '.join(map(lambda x: f'"{x}"', columns))
+        wheres_names = ' AND '.join(map(lambda where: f'"{where[0]}" = ARRAY {where[1]}', wheres))
+        select_command = sa.text(f'''SELECT {column_names} FROM "FeatureTypeTable" WHERE {wheres_names}''')
+        with self.engine.connect() as connection:
+            result = connection.execute(select_command)
+            connection.commit()
+            connection.close()
+        ans = result.fetchall()
+        return ans
 
     def __create_result_table__(self) -> None:
         # ToDo
