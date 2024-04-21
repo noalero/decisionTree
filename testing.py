@@ -3,6 +3,8 @@ import psycopg2
 import pandas as pd
 import sqlite3
 import sqlalchemy as sa
+import testing_c
+
 # from sqlalchemy import create_engine
 # from sqlalchemy import text
 # from sqlalchemy import insert
@@ -87,10 +89,13 @@ def insert_into_table(engine, table_name, values, columns) -> None:
         max_index_result = connection.execute(get_max_command)
         max_index = max_index_result.scalar()
         next_index = max_index + 1 if max_index is not None else 0
-    insert_command = sa.text(f'''INSERT INTO {table_name} (\"index\", {column_names}) VALUES ({next_index}, {value_names})''')
+        connection.close()
+    insert_command = sa.text(
+        f'''INSERT INTO {table_name} (\"index\", {column_names}) VALUES ({next_index}, {value_names})''')
     with engine.connect() as connection:
         result = connection.execute(insert_command)
         connection.commit()
+        connection.close()
 
 
 def select_from_table(engine, table_name, columns, wheres) -> list:
@@ -100,11 +105,12 @@ def select_from_table(engine, table_name, columns, wheres) -> list:
     with engine.connect() as connection:
         result = connection.execute(select_command)
         connection.commit()
+        connection.close()
     ans = result.fetchall()
     return ans
 
 
-def main_database() -> None:
+def main_basic_database() -> None:
     database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/TestingDT"
     engine = sa.create_engine(database_url)
     df = pd.DataFrame({
@@ -117,12 +123,21 @@ def main_database() -> None:
     df_columns = list(df.columns)
     insert_into_table(engine, "fruits", [5, "'Grape'", 1], df_columns)
     selected = select_from_table(engine, 'fruits', ['name', 'amount'], [('id', 3), ('id', 5)])
-    print(selected)
+
+
+def main_specific_database() -> None:
+    database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/TestingDT"
+    test_c = testing_c.TestingC(database_url)
+    test_c.create_feature_type_table()
+    test_c.insert_feature_type_table([1, 2, 3], [6, 6, 4])
+    ans = test_c.select_feature_type_table(['rule_id'], [('feature_type', [1, 2, 3]), ('feature_type_value', [1, 1, 2])])
+    print(ans)
 
 
 def main() -> None:
     # main_entropy()
-    main_database()
+    # main_basic_database()
+    main_specific_database()
 
 
 if __name__ == "__main__":
