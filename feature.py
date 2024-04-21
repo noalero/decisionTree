@@ -1,5 +1,4 @@
 import string
-# import numpy as np
 
 
 class Feature(object):
@@ -24,9 +23,8 @@ class Feature(object):
         pass
 
     @staticmethod
-    def get_breeds() -> list:
-        # ToDo
-        return []  # self.breeds
+    def get_breeds(self) -> list:
+        return self.breeds
 
     def is_value_of_breed(self, breed, value) -> bool:  # visitor pattern
         pass
