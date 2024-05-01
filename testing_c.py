@@ -19,10 +19,22 @@ class TestingC(object):
 
     def insert_feature_type_table(self, featype, featype_val) -> None:
         session = self.session()
-        new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
-        session.add(new_row)
-        session.commit()
-        session.close()
+        try:
+            new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
+            session.add(new_row)
+            session.commit()
+        except sa.exc.IntegrityError as e:
+            if 'already exists' in str(e):
+                print(
+                    f"An entry with the same combination of feature_type and feature_type_value already exists: {featype}, {featype_val}")
+            else:
+                print(f"A database integrity error occurred: {str(e)}")
+            session.rollback()
+        except Exception as e:
+            print(f"An unexpected error occurred: {str(e)}")
+            session.rollback()
+        finally:
+            session.close()
 
     def select_feature_type_table(self, columns, wheres) -> sa.Sequence:
         column_names = ', '.join(map(lambda x: f'"{x}"', columns))

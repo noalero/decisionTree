@@ -129,7 +129,7 @@ def main_specific_database() -> None:
     database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/TestingDT"
     test_c = testing_c.TestingC(database_url)
     test_c.create_feature_type_table()
-    test_c.insert_feature_type_table([1, 2, 3], [6, 6, 4])
+    test_c.insert_feature_type_table([1, 2, 3], [6, 6, 6])
     ans = test_c.select_feature_type_table(['rule_id'], [('feature_type', [1, 2, 3]), ('feature_type_value', [1, 1, 2])])
     print(ans)
 
