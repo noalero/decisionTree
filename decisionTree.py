@@ -1,20 +1,7 @@
-import brange
 import feature
-import categoricalFeature
-import numericalFeature
 import node
-import breed
-import leaf
-import parent
-import dataPath
-import feature_type
-
-import psycopg2
-import numpy as np
 import pandas as pd
-import sqlalchemy as sa
-from sqlalchemy.orm import declarative_base
-from typing import Union
+
 
 
 class DecisionTree(object):
@@ -25,14 +12,12 @@ class DecisionTree(object):
         database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/DecisionTree"
         self.__set_dataframe__(dataframe)
         self.__set_class_index__(class_index)
-        self.__set_engine__(database_url)
+        # self.__set_engine__(database_url)
         self.__set_features__(n_breeds)
         self.__create_feature_types_list__()
-        self.__create_database__()
+        # self.__create_database__()
         self.__set_root__()
 
-# getters & setters of class attributes:
-    # features:
     def __set_features__(self, n_breeds: int) -> None:
         # ToDo: check [dataframe_columns] type
         dataframe_columns = self.dataframe.columns
@@ -49,7 +34,6 @@ class DecisionTree(object):
         feat = feature.Feature(column_name, values, n_breeds)
         self.features.append(feat)
 
-    # root:
     def __set_root__(self) -> None:
         # ToDo
         # empty datapath, choose first feature
@@ -62,7 +46,6 @@ class DecisionTree(object):
         n = node.Node(fe, de)
         return n   # self.root
 
-    # feature_types_list
     def __create_feature_types_list__(self) -> None:
         self.feature_types_list: list[list[int]] = []
 
@@ -73,14 +56,12 @@ class DecisionTree(object):
     def add_feature_types_list(self, feature_type_: list[int]) -> None:
         self.feature_types_list.append(feature_type_)
 
-    # data_frame:
     def __set_dataframe__(self, df: pd.DataFrame) -> None:
         self.dataframe = df
 
     def get_dataframe(self) -> pd.DataFrame:
         return self.dataframe
 
-    # class_index:
     def __set_class_index__(self, class_index: int) -> None:
         self.class_index = class_index
 

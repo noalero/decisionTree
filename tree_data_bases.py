@@ -1,3 +1,11 @@
+import sqlalchemy as sa
+from sqlalchemy.orm import declarative_base
+from typing import Union
+
+import feature
+import brange
+
+
 def __create_database__(self) -> None:
     # ToDo return value
     self.__create_trainingdata_primary_table__()
@@ -22,7 +30,7 @@ def select_from_primary_table(self, columns: list[feature.Feature],
         elif isinstance(tup[1], str):
             where_str = f'''"{tup[0].get_name()}" == "{tup[1]}"'''
             where_list.append(where_str)
-    wheres_names = ' AND '.join(map(lambda where_str: f'{where_str}', where_list))
+    wheres_names = ' AND '.join(map(lambda where: f'{where}', where_list))
     select_command = sa.text(f'''SELECT {column_names} FROM "TrainingDataPrimaryTable" WHERE {wheres_names}''')
     with self.engine.connect() as connection:
         result = connection.execute(select_command)
