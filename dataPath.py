@@ -8,7 +8,7 @@ import decisionTree
 
 
 class DataPath(object):
-    def __init__(self, tree, size, orgnl_path, new_dir) -> None:
+    def __init__(self, tree, size, orgnl_path: list[tuple[feature.Feature, breed.Breed]], new_dir: tuple[feature.Feature, breed.Breed]) -> None:
         self.__set_size__(size)
         self.__set_path__(orgnl_path, new_dir)
         self.__set_tree__(tree)
@@ -22,10 +22,9 @@ class DataPath(object):
         return self.size
 
     # path
-    def __set_path__(self, orgnl_path, new_dir) -> None:
-        # ToDo
+    def __set_path__(self, orgnl_path: list[tuple[feature.Feature, breed.Breed]], new_dir: tuple[feature.Feature, breed.Breed]) -> None:
         self.path = orgnl_path.append(new_dir)
-
+        self.__set_size__(self.size + 1)
 
     def get_path(self) -> list:
         return self.path
@@ -37,12 +36,3 @@ class DataPath(object):
     def get_tree(self) -> decisionTree.DecisionTree:
         return self.tree
 
-# addition methods (should delete):
-    def add_feature(self, feature_) -> None:
-        # ToDo
-        pass
-        # resize
-
-    def add_breed(self, breed_) -> None:
-        # ToDo
-        pass  # resize
