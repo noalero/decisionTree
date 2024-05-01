@@ -8,10 +8,9 @@ import decisionTree
 
 
 class DataPath(object):
-    def __init__(self, tree, size, orgnl_path: list[tuple[feature.Feature, breed.Breed]], new_dir: tuple[feature.Feature, breed.Breed]) -> None:
+    def __init__(self, size, orgnl_path: list[tuple[feature.Feature, breed.Breed]], new_dir: tuple[feature.Feature, breed.Breed]) -> None:
         self.__set_size__(size)
         self.__set_path__(orgnl_path, new_dir)
-        self.__set_tree__(tree)
 
 # getters & setters of class attributes:
     # size:
@@ -29,10 +28,4 @@ class DataPath(object):
     def get_path(self) -> list:
         return self.path
 
-    # tree:
-    def __set_tree__(self, tree) -> None:
-        self.tree = tree
-
-    def get_tree(self) -> decisionTree.DecisionTree:
-        return self.tree
 
