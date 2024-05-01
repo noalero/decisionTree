@@ -16,7 +16,7 @@ from sqlalchemy.orm import declarative_base
 
 
 class DecisionTree(object):
-    def __init__(self, dataframe, class_index, n_breeds=7) -> None:
+    def __init__(self, dataframe: pd.DataFrame, class_index: int, n_breeds=7) -> None:
         # ToDo
         # for each feature optional variable: n_breeds
         # Connect to database:
@@ -31,18 +31,18 @@ class DecisionTree(object):
 
 # getters & setters of class attributes:
     # features:
-    def __set_features__(self, n_breeds) -> None:
+    def __set_features__(self, n_breeds: int) -> None:
         # ToDo: check [dataframe_columns] type
-        dataframe_columns = list[self.dataframe.columns]
-        self.features = []
+        dataframe_columns = self.dataframe.columns
+        self.features: list[feature.Feature] = []
         for col in dataframe_columns:
             self.__add_feature__(col, n_breeds)
 
     @staticmethod
-    def get_features(self) -> list:
+    def get_features(self) -> list[feature.Feature]:
         return self.features
 
-    def __add_feature__(self, column_name, n_breeds) -> None:
+    def __add_feature__(self, column_name: str, n_breeds: int) -> None:
         values = self.dataframe.get(column_name)
         feat = feature.Feature(column_name, values, n_breeds)
         self.features.append(feat)
@@ -62,20 +62,20 @@ class DecisionTree(object):
 
     # feature_types_list
     def __create_feature_types_list__(self) -> None:
-        self.feature_types_list = []
+        self.feature_types_list: list[list[int]] = []
 
-    def get_feature_types_list(self) -> list:
+    def get_feature_types_list(self) -> list[list[int]]:
         # Should be private?
         return self.feature_types_list
 
-    def add_feature_types_list(self, feature_type) -> None:
-        self.feature_types_list.append(feature_type)
+    def add_feature_types_list(self, feature_type_: list[int]) -> None:
+        self.feature_types_list.append(feature_type_)
 
     # engine:
-    def __set_engine__(self, database_url):
+    def __set_engine__(self, database_url) -> None:
         self.engine = sa.create_engine(database_url)
 
-    def __get_engine__(self):
+    def __get_engine__(self) -> sa.engine:
         return self.engine
 
     # session:
@@ -86,14 +86,14 @@ class DecisionTree(object):
         return self.session
 
     # data_frame:
-    def __set_dataframe__(self, df) -> None:
+    def __set_dataframe__(self, df: pd.DataFrame) -> None:
         self.dataframe = df
 
     def get_dataframe(self) -> pd.DataFrame:
         return self.dataframe
 
     # class_index:
-    def __set_class_index__(self, class_index) -> None:
+    def __set_class_index__(self, class_index: int) -> None:
         self.class_index = class_index
 
     def get_class_index(self) -> int:
@@ -122,14 +122,27 @@ class DecisionTree(object):
         return ans
 
     def __create_feature_type_table__(self) -> None:
+        # ToDo
         feature_type.Base.metadata.create_all(self.engine)
 
-    def insert_feature_type_table(self, featype, featype_val) -> None:
+    def insert_feature_type_table(self, featype: list[int], featype_val: list[int]) -> None:
         session = self.session()
-        new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
-        session.add(new_row)
-        session.commit()
-        session.close()
+        try:
+            new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
+            session.add(new_row)
+            session.commit()
+        except sa.exc.IntegrityError as e:
+            if 'already exists' in str(e):
+                print(
+                    f"An entry with the same combination of feature_type and feature_type_value already exists: {featype}, {featype_val}")
+            else:
+                print(f"A database integrity error occurred: {str(e)}")
+            session.rollback()
+        except Exception as e:
+            print(f"An unexpected error occurred: {str(e)}")
+            session.rollback()
+        finally:
+            session.close()
 
     def select_feature_type_table(self, columns, wheres) -> sa.Sequence:
         column_names = ', '.join(map(lambda x: f'"{x}"', columns))
@@ -194,7 +207,7 @@ class DecisionTree(object):
             func_call = self.__calc_entropy__(first_tuple[0], pos=first_tuple[1], neg=first_tuple[2])
         else:
             raise TypeError("Unexpected tuple structure in breeds_ list")
-        expectations = []
+        expectations: list[float] = []
         total_sum = 0  # (0.?)
         for breed_ in breeds_:
             exp = func_call
