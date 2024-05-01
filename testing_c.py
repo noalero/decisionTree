@@ -14,7 +14,7 @@ class TestingC(object):
         self.engine = sa.create_engine(url)
         self.session = sa.orm.sessionmaker(bind=self.engine)
 
-    def create_feature_type_table(self) -> None:
+    def create_feature_type_table(self, engine) -> None:
         Base.metadata.create_all(self.engine)
 
     def insert_feature_type_table(self, featype, featype_val) -> None:
