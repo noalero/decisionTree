@@ -4,6 +4,7 @@ from typing import Union
 
 import feature
 import brange
+import feature_type
 
 
 def __create_database__(self) -> None:

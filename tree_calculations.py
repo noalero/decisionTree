@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def __calc_entropy__(self, total, *args, **kwargs) -> float:
     if len(args) == 1 and isinstance(args[0], list) and not kwargs:
         return self.__calc_entropy_list__(total, args[0])
@@ -66,3 +69,4 @@ def __calc_information_gain__(self, breeds, total) -> float:
     neg = 0.0
     entropy = self.__calc_entropy__(total, pos, neg)
     return 0.0
+
