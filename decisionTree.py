@@ -1,3 +1,4 @@
+import brange
 import feature
 import categoricalFeature
 import numericalFeature
@@ -13,6 +14,7 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.orm import declarative_base
+from typing import Union
 
 
 class DecisionTree(object):
@@ -110,9 +112,18 @@ class DecisionTree(object):
         self.dataframe.to_sql(
             "TrainingDataPrimaryTable", con=self.engine, index=True, index_label='index', if_exists='replace')
 
-    def select_from_primary_table(self, columns, wheres) -> sa.Sequence:
-        column_names = ', '.join(map(lambda x: f'"{x}"', columns))
-        wheres_names = ' AND '.join(map(lambda where: f'"{where[0]}" = {where[1]}', wheres))
+    def select_from_primary_table(self, columns: list[feature.Feature], wheres: list[tuple[feature.Feature, Union[brange.Range, str]]]) -> sa.Sequence:
+        # ToDo: check
+        column_names = ', '.join(map(lambda x: f'"{x.get_name}"', columns))
+        where_list: list[str] = []
+        for tup in wheres:
+            if isinstance(tup[1], brange.Range):
+                where_str = f'''"{tup[0].get_name()}" >= {tup[1].get_from_index()} AND "{tup[0].get_name()}" < {tup[1].get_to_index()}'''
+                where_list.append(where_str)
+            elif isinstance(tup[1], str):
+                where_str = f'''"{tup[0].get_name()}" == "{tup[1]}"'''
+                where_list.append(where_str)
+        wheres_names = ' AND '.join(map(lambda where_str: f'{where_str}', where_list))
         select_command = sa.text(f'''SELECT {column_names} FROM "TrainingDataPrimaryTable" WHERE {wheres_names}''')
         with self.engine.connect() as connection:
             result = connection.execute(select_command)
@@ -198,7 +209,7 @@ class DecisionTree(object):
         return some / total
 
     # e_parent_feature:
-    def e_parent_feature(self, breeds_) -> float:
+    def e_parent_feature(self, breeds_: list[tuple]) -> float:
         # ToDo
         first_tuple = breeds_[0]
         if isinstance(first_tuple[1], list):
