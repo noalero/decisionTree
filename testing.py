@@ -5,6 +5,10 @@ import sqlite3
 import sqlalchemy as sa
 import testing_c
 
+import feature
+import tree_data_bases as tdb
+import brange as br
+
 # from sqlalchemy import create_engine
 # from sqlalchemy import text
 # from sqlalchemy import insert
@@ -135,10 +139,35 @@ def main_specific_database() -> None:
     print(ans)
 
 
+def main_tree_db() -> None:
+    # URL:
+    database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/DecisionTree"
+    # Sample Data Frame:
+    data = {'name': ['Alise', 'Bob', 'Colin', 'Daphne', 'Eduard'], 'id': [12, 34, 56, 78, 90], 'feature1': [10, 15, 25, 12, 30],
+            'feature2': ['val2', 'val2', 'val3', 'val2', 'val1'], 'feature3': ['1', '2', '4', '2', '5']}
+    dataframe = pd.DataFrame(data)
+
+    # Columns to Select:
+    columns = ['name', 'id', 'feature2']
+    # Where Map:
+    where1 = {'feature2': 'val2', 'feature3': '1'}
+    where2 = {'feature1': br.Range(10, 15)}
+    wheres = [where1, where2]
+    # ====================================================================== #
+    # Create Primary Table from Data Frame:
+    # tdb. __create_primary_from_dataframe__(dataframe, database_url)
+    # Select
+    engine = tdb.connect_db(database_url)
+    result = tdb.or_select_from_primary_table(columns, wheres, engine)
+    for row in result:
+        print(row)
+
+
 def main() -> None:
     # main_entropy()
     # main_basic_database()
-    main_specific_database()
+    # main_specific_database()
+    main_tree_db()
 
 
 if __name__ == "__main__":
