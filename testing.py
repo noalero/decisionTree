@@ -139,35 +139,86 @@ def main_specific_database() -> None:
     print(ans)
 
 
-def main_tree_db() -> None:
+def main_tree_db_prim() -> None:
     # URL:
     database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/DecisionTree"
+
     # Sample Data Frame:
     data = {'name': ['Alise', 'Bob', 'Colin', 'Daphne', 'Eduard'], 'id': [12, 34, 56, 78, 90], 'feature1': [10, 15, 25, 12, 30],
             'feature2': ['val2', 'val2', 'val3', 'val2', 'val1'], 'feature3': ['1', '2', '4', '2', '5']}
     dataframe = pd.DataFrame(data)
-
+    # Create Primary Table from Data Frame:
+    tdb.__create_primary_from_dataframe__(dataframe, database_url)
     # Columns to Select:
     columns = ['name', 'id', 'feature2']
     # Where Map:
     where1 = {'feature2': 'val2', 'feature3': '1'}
     where2 = {'feature1': br.Range(10, 15)}
     wheres = [where1, where2]
-    # ====================================================================== #
-    # Create Primary Table from Data Frame:
-    # tdb. __create_primary_from_dataframe__(dataframe, database_url)
     # Select
     engine = tdb.connect_db(database_url)
-    result = tdb.or_select_from_primary_table(columns, wheres, engine)
+    result = tdb.select_table(columns, wheres, engine, "TrainingDataPrimaryTable")
     for row in result:
         print(row)
+
+
+def main_tree_db_ftype() -> None:
+    # URL:
+    database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/DecisionTree"
+    engine: sa.engine = tdb.connect_db(database_url)
+    # ============================ Basic ============================ #
+    #                Create table:
+    # tdb.__create_feature_type_table__(engine)
+    #                Insert single rows:
+    # tdb.insert_single_row_feature_type_table(engine, 'Type3', 'Value1')
+    # tdb.insert_single_row_feature_type_table(engine, 'Type2', 'Value3')
+    # tdb.insert_single_row_feature_type_table(engine, 'Type2', 'Value2')
+    # tdb.insert_single_row_feature_type_table(engine, 'Type1', 'Value2')
+    #                Insert multiple rows:
+    # row1 = {'f_type': 'Type4', 'f_val': 'Value1'}
+    # row2 = {'f_type': 'Type4', 'f_val': 'Value2'}
+    # row3 = {'f_type': 'Type4', 'f_val': 'Value3'}
+    # row4 = {'f_type': 'Type4', 'f_val': 'Value1'}
+    # rows: list[dict] = [row1, row2, row3, row4]
+    # inserted_rows = tdb.insert_multiple_rows_feature_type_table(engine, rows)
+    # print("Number of rows inserted: ", inserted_rows)
+    #                Select:
+    # columns = ['rule_id', 'f_val']
+    # where1 = {'f_val': 'Value1', 'f_type': 'Type1'}
+    # where2 = {'f_val': 'Value1', 'f_type': 'Type2'}
+    # where3 = {'rule_id': br.Range(2, 17)}
+    # wheres = [where1, where2, where3]
+    # result = tdb.select_table(columns, wheres, engine, "FeatureTypeTable")
+    # for row in result:
+    #     print(row)
+    # ============================ With classes ============================ #
+    # classes = ['Class1', 'Class2', 'Class3']
+    #                Create table:
+    # result = tdb.__create_feature_type_table_classes__(engine, classes)
+    # print(result)
+    #                 Insert single row:
+    # f_type = 'Type1'
+    # f_val = 'Value1'
+    # class_dict = {'Class1': 12, 'Class2': 7, 'Class3': 2}
+    # result = tdb.insert_single_row_feature_type_table_classes(engine, f_type, f_val, class_dict)
+    # print(result)
+    #                 Insert multiple row:
+    # dict1 = {'f_type': 'Type3', 'f_val': 'Value1', 'Class1': 1, 'Class2': 1, 'Class3': 1}
+    # dict2 = {'f_type': 'Type3', 'f_val': 'Value2', 'Class1': 2, 'Class2': 2, 'Class3': 2}
+    # dict3 = {'f_type': 'Type3', 'f_val': 'Value3', 'Class1': 3, 'Class2': 3, 'Class3': 3}
+    # dict_list = [dict1, dict2, dict3]
+    # result = tdb.insert_multiple_rows_feature_type_table_classes(engine, dict_list)
+    # print(result)
+    #                 Select:
 
 
 def main() -> None:
     # main_entropy()
     # main_basic_database()
     # main_specific_database()
-    main_tree_db()
+    # main_tree_db_prim()
+    main_tree_db_ftype()
+
 
 
 if __name__ == "__main__":
