@@ -111,8 +111,8 @@ def __create_feature_type_table__(engine: sa.engine) -> str:
             return ret_str
 
 
-def __create_feature_type_table_classes__(engine: sa.engine, classes: list[str]) -> str:
-    classes_query = f'''{' BIGINT NOT NULL, '.join(classes)} BIGINT NOT NULL, '''
+def __create_feature_type_table_classes__(engine: sa.engine, class_names: list[str]) -> str:
+    classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
     create_table_query = sa.text(f"""
                                     CREATE TABLE IF NOT EXISTS "FeatureTypeTable"  (
                                         rule_id SERIAL PRIMARY KEY,
@@ -196,7 +196,7 @@ def insert_multiple_rows_feature_type_table(engine: sa.engine, rows: list[dict])
     return ans
 
 
-def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: list[dict[str, int]]) -> int:
+def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: list[dict[str, int | str]]) -> int:
     # make sure that every row has [f_type] and [f_var]
     if rows:
         for index, dct in list(enumerate(rows)):
@@ -212,7 +212,6 @@ def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: lis
                                     VALUES ({class_vals}) 
                                     ON CONFLICT (f_type, f_val) DO NOTHING
                                 """)
-        param_dict: dict[str, int | str] = {}
         with engine.connect() as connection:
             with connection.begin():
                 try:
@@ -228,12 +227,100 @@ def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: lis
     return ans
 
 
-def __create_result_table__(self) -> None:
-    # ToDo
-    self.result_table = []  # database create
+def __create_result_table__(engine: sa.engine, class_names: list[str]) -> str:
+    classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
+    create_table_query = sa.text(f"""
+                                    CREATE TABLE IF NOT EXISTS "ResultTable"  (
+                                        rule_id INT PRIMARY KEY,
+                                        {classes_query}
+                                        total BIGINT NOT NULL,
+                                        FOREIGN KEY (rule_id) REFERENCES "FeatureTypeTable"(rule_id)
+                                    )
+                                """)
+    with engine.connect() as connection:
+        try:
+            connection.execute(create_table_query)
+            connection.commit()
+            ret_str = "ResultTable created successfully."
+        except Exception as e:
+            ret_str = f"Failed to create table: {e}"
+        finally:
+            connection.close()
+            return ret_str
 
 
-def insert_result_table(self, rule_id, classes_item_percentage_list) -> None:
-    # ToDo
-    # database insert
-    pass
+def calculate_total(classes_amount: list[int]) -> int:
+    if classes_amount:
+        total_sum = 0
+        for cls_amnt in classes_amount:
+            total_sum += cls_amnt
+    else:
+        total_sum = -1
+    return total_sum
+
+
+def calculate_total_lst(rows: list[dict[str, int]]) -> list[int]:
+    totals: list[int] = []
+    for dct in rows:
+        sums: list[int] = []
+        for key, val in dct.items():
+            if key != 'rule_id':
+                sums.append(val)
+        total = calculate_total(sums)
+        totals.append(total)
+    return totals
+
+
+def insert_result_table(engine: sa.engine, rows: list[dict[str, int]]) -> int:
+    # [rows]: [rule_id], [class_a], [calss_b], ...
+    if not rows:
+        ans = 0
+    else:
+        # Calculate total amount:
+        totals: list[int] = calculate_total_lst(rows)
+        # Add [totals] to dictionaries:
+        i = 0
+        for dct in rows:
+            dct['total'] = totals[i]
+            i += 1
+        column_names = ', '.join(rows[0].keys())
+        column_vals = ', '.join([f":{key}" for key in rows[0].keys()])
+        insert_query = sa.text(f"""
+                                    INSERT INTO "ResultTable" ({column_names}) 
+                                    VALUES ({column_vals})
+                                """)
+        with engine.connect() as connection:
+            with connection.begin():
+                try:
+                    # Execute all inserts in one go:
+                    result = connection.execute(insert_query, rows)
+                    connection.commit()
+                    ans = result.rowcount
+                except Exception as e:
+                    print("Something went wrong: ", e)
+                    ans = -1
+                finally:
+                    connection.close()
+    return ans
+
+
+def select_result_table(class_names: list[str], conditions: list[dict[str, str]], engine: sa.engine):
+    select_clause = f'''SELECT r.{', r.'.join(class_names)} FROM "FeatureTypeTable" ft
+                        JOIN "ResultTable" r ON ft.rule_id = r.rule_id'''
+    condition_clauses: list[str] = []
+    where_clause = ""
+    if conditions:
+        for index, dct in list(enumerate(conditions)):
+            if not ('f_type' in dct and 'f_val' in dct):
+                # remove invalid dictionaries:
+                conditions.pop(index)
+            else:
+                and_clause = f"""ft.f_type = '{dct['f_type']}' AND ft.f_val = '{dct['f_val']}'"""
+                condition_clauses.append(and_clause)
+        if condition_clauses:
+            where_clause = " WHERE " + " OR ".join(condition_clauses)
+    full_sql = select_clause + where_clause
+    sql_text = sa.text(full_sql)
+    with engine.connect() as connection:
+        result = connection.execute(sql_text)
+        return result.fetchall()
