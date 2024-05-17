@@ -7,6 +7,7 @@ import testing_c
 
 import feature
 import tree_data_bases as tdb
+import tree_calculations as tclc
 import brange as br
 
 # from sqlalchemy import create_engine
@@ -246,13 +247,25 @@ def main_tree_db_result() -> None:
     print(ans)
 
 
+def main_calc_basic() -> None:
+    # <total, list: classes> || <total, pos, neg>
+    # classes: A, B, C, D
+    parent_classes = [14, 16]
+    breed1_classes = [1, 12]
+    breed2_classes = [13, 4]
+    breeds = [breed1_classes, breed2_classes]
+    ig = tclc.calc_information_gain(breeds, parent_classes)
+    print(ig)
+
+
 def main() -> None:
     # main_entropy()
     # main_basic_database()
     # main_specific_database()
     # main_tree_db_prim()
     # main_tree_db_ftype()
-    main_tree_db_result()
+    # main_tree_db_result()
+    main_calc_basic()
 
 
 
