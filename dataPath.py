@@ -11,7 +11,8 @@ class DataPath(object):
     def __set_size__(self, size) -> None:
         self.size = size
 
-    def __set_path__(self, orgnl_path: list[tuple[feature.Feature, Union[brange.Range, str]]], new_dir: tuple[feature.Feature, Union[brange.Range, str]]) -> None:
+    def __set_path__(self, orgnl_path: list[tuple[feature.Feature, Union[brange.Range, str]]],
+                     new_dir: tuple[feature.Feature, Union[brange.Range, str]]) -> None:
         self.path = orgnl_path.append(new_dir)
         self.__set_size__(self.size + 1)
 
