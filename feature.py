@@ -1,42 +1,26 @@
-import numpy as np
 class Feature(object):
-    def __init__(self, name, values):
-        self.__setName__(name)
-    def __setName__(self, name):
+    def __init__(self, name: str, n_breeds: int) -> None:
+        self.__set_name__(name)
+        self.__set_n_breeds__(n_breeds)
+        # self.__set_breeds__(values,n_breeds)
+
+    def __set_name__(self, name) -> None:
         self.name = name
-    def getName(self):
+
+    def __set_n_breeds__(self, n_breeds) -> None:
+        self.n_breeds = n_breeds
+
+    def __set_breeds__(self, values: list, n_breeds: int) -> None:  # visitor pattern
+        # TODO
+        pass
+
+    def get_name(self) -> str:
         return self.name
-    def __setBreeds__(self, values): # visitor pattern
-        pass
-    def getBreeds(self):
+
+    def get_n_breeds(self) -> int:
+        return self.n_breeds
+
+    @staticmethod
+    def get_breeds(self) -> list:
         return self.breeds
-    def __setInformationGane__(self):
-        pass
-    def getInformationGaine(self):
-        return self.informationGaine
-    def isValueOfBreed(self, breed, value): # visitor pattern
-        pass
-    def __calcInformationGaine__(self, breeds, total):
-        entropy = self.__calcEntropy__()
-        pass
-    def __calcEntropy__(self, total, pos, neg):
-        posP = self.__calcP__(total, pos)
-        negP = self.__calcP__(total, neg)
-        logPosP = np.log(posP)
-        logNegP = np.log(negP)
-        entropy = (posP * logPosP + negP * logNegP) * (-1.)
-        return entropy
-    def __calcP__(self, total, some):
-        return some / total
-    def EParentFeature(self, breeds):
-        expectations = []
-        totalSum = 0
-        for total, pos, neg in breeds:
-            exp = self.__calcEntropy__(total, pos, neg)
-            expectations.append(exp * total)
-            totalSum += total
-        eParent = 0.
-        for exp in expectations:
-            eParent += exp
-        eParent = eParent / totalSum
-        return eParent
+
