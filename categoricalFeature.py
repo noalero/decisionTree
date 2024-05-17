@@ -3,11 +3,11 @@ import feature
 
 class CategoricalFeature(feature.Feature):
 
-    def __init__(self, name, values: list[str], n_breeds) -> None:
-        feature.Feature.__init__(self, name, n_breeds)
+    def __init__(self, name: str, values: list[str], n_breeds: int, serial_number: int) -> None:
+        feature.Feature.__init__(self, name, n_breeds, serial_number)
         self.__set_breeds__(values, n_breeds)
 
-    def __set_breeds__(self, values: list[str], n_breeds) -> None:  # visitor pattern
+    def __set_breeds__(self, values: list[str], n_breeds: int) -> None:  # visitor pattern
         self.breeds = set()
         breed_count = n_breeds  # if there is no limitation to the number of breeds, n_breeds < 0
         for val in values:
