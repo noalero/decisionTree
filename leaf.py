@@ -1,10 +1,11 @@
 import breed
+import dataPath
 import decisionTree
 
 
 class Leaf(breed.Breed):
-    def __init__(self, name, datapath_):
-        breed.Breed.__init__(self, name, datapath_)
+    def __init__(self, name: str, datapath_: dataPath.DataPath, serial_number: int):
+        breed.Breed.__init__(self, name, datapath_, serial_number)
 
     def __set_answer__(self, answer) -> None:
         # ToDo

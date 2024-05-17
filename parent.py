@@ -1,11 +1,13 @@
 import breed
+import dataPath
+import feature
 import node
 
 
 class Parent(breed.Breed):
-    def __init__(self, name, datapath_, feature_):
+    def __init__(self, name: str, datapath_: dataPath.DataPath, feature_: feature.Feature, serial_number: int):
         self.__create_next__(feature_, datapath_)
-        breed.Breed.__init__(self, name, datapath_)
+        breed.Breed.__init__(self, name, datapath_, serial_number)
 
     def __set_next__(self, next_: node.Node) -> None:
         self.next = next_
