@@ -25,9 +25,8 @@ class Feature(object):
         return self.n_breeds
 
     def get_serial_number(self) -> int:
-        return  self.serial_number
+        return self.serial_number
 
-    @staticmethod
     def get_breeds(self) -> list:
         return self.breeds
 

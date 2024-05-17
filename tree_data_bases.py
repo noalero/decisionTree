@@ -5,6 +5,9 @@ import typing as tp
 import psycopg2
 from psycopg2 import sql
 
+import brange
+import breed
+import dataPath
 import feature
 import brange as br
 import feature_type
@@ -324,3 +327,22 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
     with engine.connect() as connection:
         result = connection.execute(sql_text)
         return result.fetchall()
+
+
+def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], engine: sa.engine) -> list[int]:
+    # TODO: test + class column name
+    # Create conditions list:
+    conditions = []
+    for fb in dt_path.get_path():
+        cond = {fb[0].get_name(): fb[1]}
+        conditions.append(cond)
+    result: list[int] = []
+    for cls in classes:
+        condition: dict[str, str | brange.Range] = {"class": cls}
+        class_column = select_table(["class"], conditions+[condition], engine, "TrainingDataPrimaryTable")
+        if class_column:
+            cls_sum = len(class_column)
+            result.append(cls_sum)
+    return result
+
+
