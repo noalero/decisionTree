@@ -1,6 +1,7 @@
 import numpy as np
-import psycopg2
 import pandas as pd
+import psycopg2
+
 import sqlite3
 import sqlalchemy as sa
 import testing_c
@@ -250,12 +251,17 @@ def main_tree_db_result() -> None:
 def main_calc_basic() -> None:
     # <total, list: classes> || <total, pos, neg>
     # classes: A, B, C, D
-    parent_classes = [14, 16]
-    breed1_classes = [1, 12]
-    breed2_classes = [13, 4]
-    breeds = [breed1_classes, breed2_classes]
-    ig = tclc.calc_information_gain(breeds, parent_classes)
-    print(ig)
+    parent_classesA = [14, 16]
+    breed1_classesA = [1, 12]
+    breed2_classesA = [13, 4]
+    breedsA = [breed1_classesA, breed2_classesA]
+    parent_classesB = [14, 16]
+    breed1_classesB = [1, 7]
+    breed2_classesB = [6, 4]
+    breed3_classesB = [7, 5]
+    breedsB = [breed1_classesB, breed2_classesB, breed3_classesB]
+    ig = tclc.calc_information_gain(breedsB, parent_classesB)
+    print("information gain: ", ig)
 
 
 def main() -> None:
@@ -266,7 +272,6 @@ def main() -> None:
     # main_tree_db_ftype()
     # main_tree_db_result()
     main_calc_basic()
-
 
 
 if __name__ == "__main__":
