@@ -1,20 +1,14 @@
 import numpy as np
 import pandas as pd
 import psycopg2
-
 import sqlite3
 import sqlalchemy as sa
-import testing_c
 
 import config
 import feature
 import tree_data_bases as tdb
 import tree_calculations as tclc
 import brange as br
-
-# from sqlalchemy import create_engine
-# from sqlalchemy import text
-# from sqlalchemy import insert
 
 
 # entropy:
@@ -133,13 +127,14 @@ def main_basic_database() -> None:
 
 
 def main_specific_database() -> None:
-    database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/TestingDT"
-    engine = sa.create_engine(database_url)
-    test_c = testing_c.TestingC(database_url)
-    test_c.create_feature_type_table(engine)
-    test_c.insert_feature_type_table([1, 1, 3], [7, 7, 6])
-    ans = test_c.select_feature_type_table(['rule_id'], [('feature_type', [1, 2, 3]), ('feature_type_value', [1, 1, 2])])
-    print(ans)
+    # database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/TestingDT"
+    # engine = sa.create_engine(database_url)
+    # test_c = testing_c.TestingC(database_url)
+    # test_c.create_feature_type_table(engine)
+    # test_c.insert_feature_type_table([1, 1, 3], [7, 7, 6])
+    # ans = test_c.select_feature_type_table(['rule_id'], [('feature_type', [1, 2, 3]), ('feature_type_value', [1, 1, 2])])
+    # print(ans)
+    pass
 
 
 def main_tree_db_prim() -> None:
