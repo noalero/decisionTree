@@ -3,7 +3,7 @@ class Feature(object):
         self.__set_name__(name)
         self.__set_n_breeds__(n_breeds)
         self.__set_serial_number__(serial_number)
-        # self.__set_breeds__(values,n_breeds)
+        self.breeds = set()
 
     def __set_name__(self, name) -> None:
         self.name = name
@@ -14,8 +14,7 @@ class Feature(object):
     def __set_serial_number__(self, serial_num: int) -> None:
         self.serial_number = serial_num
 
-    def __set_breeds__(self, values: list, n_breeds: int) -> None:  # visitor pattern
-        # TODO
+    def __set_breeds__(self) -> None:  # visitor pattern
         pass
 
     def get_name(self) -> str:
