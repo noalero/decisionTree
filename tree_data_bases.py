@@ -5,15 +5,15 @@ import typing as tp
 import psycopg2
 from psycopg2 import sql
 
+import config
 import brange
-import breed
 import dataPath
 import feature
 import brange as br
-import feature_type
 
 
 def connect_db(database_url: str) -> sa.engine:
+    # TODO: delete?
     engine = sa.create_engine(database_url)
     return engine
 

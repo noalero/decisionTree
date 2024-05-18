@@ -6,6 +6,7 @@ import sqlite3
 import sqlalchemy as sa
 import testing_c
 
+import config
 import feature
 import tree_data_bases as tdb
 import tree_calculations as tclc
