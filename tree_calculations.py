@@ -105,6 +105,8 @@ def calc_feature_entropy(feat: feature.Feature, dp: dataPath.DataPath, classes: 
 
 def calc_feature_information_gain(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str],
                                   engine: sa.angine) -> float:
-    # TODO: finish!!!
+    # TODO: test
     breeds_amounts: list[list[int]] = calc_feature_breeds_amount(feat, dp, classes, engine)
-    parent_classes = tdb.get_path_classes_amounts(dp, classes, engine)
+    parent_classes: list[int] = tdb.get_path_classes_amounts(dp, classes, engine)
+    inf_gain = calc_information_gain(breeds_amounts, parent_classes)
+    return inf_gain
