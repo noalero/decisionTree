@@ -93,3 +93,9 @@ class Node(object):
                     unchosen_breeds.append(brd)
             else:
                 feat_dict[temp_feat] = (brd, temp_ig)
+
+    def is_leaf(self) -> bool:
+        last_dir = self.datapath.get_path()[self.datapath.get_size() - 1]
+        last_feature_name = last_dir[0].get_name()
+        return last_feature_name == self.feature.get_name()
+
