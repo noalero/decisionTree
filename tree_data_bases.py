@@ -330,20 +330,20 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
         return result.fetchall()
 
 
-def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], engine: sa.engine) -> list[dict[str, int]]:
+def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], engine: sa.engine) -> list[int]:
     # TODO: test + class column name
     # Create conditions list:
     path_conditions = []
     for fb in dt_path.get_path():
         cond = {fb[0].get_name(): fb[1]}
         path_conditions.append(cond)
-    result: list[dict[str, int]] = []
+    result: list[int] = []
     for cls in classes:
         class_condition: dict[str, str | brange.Range] = {"class": cls}
         class_column = select_table(["class"], path_conditions+[class_condition], engine, "TrainingDataPrimaryTable")
         if class_column:
             cls_sum = len(class_column)
-            result.append({cls: cls_sum})
+            result.append(cls_sum)
     return result
 
 
