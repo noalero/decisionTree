@@ -5,7 +5,6 @@ import numpy as np
 
 import feature
 import brange
-import feature_type
 
 
 # ------------------------------ decision tree ------------------------------
@@ -43,29 +42,29 @@ def select_from_primary_table(self, columns: list[feature.Feature], wheres: list
     return ans
 
 
-def __create_feature_type_table__(self) -> None:
-    # ToDo
-    feature_type.Base.metadata.create_all(self.engine)
+# def __create_feature_type_table__(self) -> None:
+#     # ToDo
+#     feature_type.Base.metadata.create_all(self.engine)
 
 
-def insert_feature_type_table(self, featype: list[int], featype_val: list[int]) -> None:
-    session = self.session()
-    try:
-        new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
-        session.add(new_row)
-        session.commit()
-    except sa.exc.IntegrityError as e:
-        if 'already exists' in str(e):
-            print(
-                f"An entry with the same combination of feature_type and feature_type_value already exists: {featype}, {featype_val}")
-        else:
-            print(f"A database integrity error occurred: {str(e)}")
-        session.rollback()
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
-        session.rollback()
-    finally:
-        session.close()
+# def insert_feature_type_table(self, featype: list[int], featype_val: list[int]) -> None:
+#     session = self.session()
+#     try:
+#         new_row = feature_type.FeatureTypeObject(feature_type=featype, feature_type_value=featype_val)
+#         session.add(new_row)
+#         session.commit()
+#     except sa.exc.IntegrityError as e:
+#         if 'already exists' in str(e):
+#             print(
+#                 f"An entry with the same combination of feature_type and feature_type_value already exists: {featype}, {featype_val}")
+#         else:
+#             print(f"A database integrity error occurred: {str(e)}")
+#         session.rollback()
+#     except Exception as e:
+#         print(f"An unexpected error occurred: {str(e)}")
+#         session.rollback()
+#     finally:
+#         session.close()
 
 
 def select_feature_type_table(self, columns, wheres) -> sa.Sequence:
