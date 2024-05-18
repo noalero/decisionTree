@@ -18,13 +18,8 @@ def connect_db(database_url: str) -> sa.engine:
     return engine
 
 
-def __create_databases__(dataframe: pd.DataFrame, database_url: str) -> None:
-    # database_url = "postgresql://NoaLeron:tsmOn8tln@localhost:5432/DecisionTree"
-    # engine = sa.create_engine(database_url)
-    # session = sa.orm.sessionmaker(bind=engine)
-    __create_primary_from_dataframe__(dataframe, database_url)
-    # __create_feature_type_table__()
-    # __create_result_table__()
+def __create_databases__(dataframe: pd.DataFrame) -> None:
+    __create_primary_from_dataframe__(dataframe, config.database_url)
 
 
 def select_is_instance(conditions: dict[str, str | br.Range]) -> list[str]:
@@ -40,7 +35,7 @@ def select_is_instance(conditions: dict[str, str | br.Range]) -> list[str]:
     return condition_clauses
 
 
-def select_table(columns: list[str], conditions: list[dict[str, str | br.Range]], engine: sa.engine, name: str):
+def select_table(columns: list[str], conditions: list[dict[str, str | br.Range]], name: str):
     select_clause = f'''SELECT {', '.join(columns)} FROM "{name}"'''
     condition_clauses: list[str] = []
     if conditions:
@@ -57,21 +52,20 @@ def select_table(columns: list[str], conditions: list[dict[str, str | br.Range]]
         where_clause = ""
     full_sql = select_clause + where_clause
     sql_text = sa.text(full_sql)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         result = connection.execute(sql_text)
         return result.fetchall()
 
 
-def __create_primary_from_dataframe__(dataframe: pd.DataFrame, database_url: str) -> None:
+def __create_primary_from_dataframe__(dataframe: pd.DataFrame) -> None:
     # TODO: ["class"] column
-    engine = connect_db(database_url)
     dataframe.to_sql(
-        "TrainingDataPrimaryTable", con=engine, index=True, index_label='index', if_exists='replace')
-    engine.dispose()
+        config.training_t_name, con=config.engine, index=True, index_label='index', if_exists='replace')
+    config.engine.dispose()
 
 
 def types_select_from_primary_table(columns: list[str],
-                                    conditions: dict[str, str | br.Range], engine: sa.engine):
+                                    conditions: dict[str, str | br.Range]):
     select_clause = f'''SELECT {', '.join(columns)} FROM "TrainingDataPrimaryTable"'''
     if conditions:
         condition_clauses: list[str] = []  # [f"{col} = :{col}" for col in conditions]
@@ -89,12 +83,13 @@ def types_select_from_primary_table(columns: list[str],
         where_clause = ""
     full_sql = select_clause + where_clause
     sql_text = sa.text(full_sql)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         result = connection.execute(sql_text)
         return result.fetchall()
 
 
-def __create_feature_type_table__(engine: sa.engine) -> str:
+def __create_feature_type_table__() -> str:
+    # TODO: config.feat_t_name
     create_table_query = sa.text("""
                                     CREATE TABLE IF NOT EXISTS "FeatureTypeTable"  (
                                         rule_id SERIAL PRIMARY KEY,
@@ -103,7 +98,7 @@ def __create_feature_type_table__(engine: sa.engine) -> str:
                                         UNIQUE (f_type, f_val)
                                     )
                                 """)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         try:
             connection.execute(create_table_query)
             connection.commit()
@@ -115,7 +110,8 @@ def __create_feature_type_table__(engine: sa.engine) -> str:
             return ret_str
 
 
-def __create_feature_type_table_classes__(engine: sa.engine, class_names: list[str]) -> str:
+def __create_feature_type_table_classes__(class_names: list[str]) -> str:
+    # TODO: config.feat_t_name
     classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
     create_table_query = sa.text(f"""
                                     CREATE TABLE IF NOT EXISTS "FeatureTypeTable"  (
@@ -126,7 +122,7 @@ def __create_feature_type_table_classes__(engine: sa.engine, class_names: list[s
                                         UNIQUE (f_type, f_val)
                                     )
                                 """)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         try:
             connection.execute(create_table_query)
             connection.commit()
@@ -138,13 +134,14 @@ def __create_feature_type_table_classes__(engine: sa.engine, class_names: list[s
             return ret_str
 
 
-def insert_single_row_feature_type_table(engine: sa.engine, f_type, f_val) -> str:
+def insert_single_row_feature_type_table(f_type, f_val) -> str:
+    # TODO: config.feat_t_name
     insert_query = sa.text("""
                                 INSERT INTO "FeatureTypeTable" (f_type, f_val) 
                                 VALUES (:f_type, :f_val)
                                 ON CONFLICT (f_type, f_val) DO NOTHING
                             """)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         result = connection.execute(insert_query, {'f_type': f_type, 'f_val': f_val})
         connection.commit()
         if result.rowcount:
@@ -155,8 +152,9 @@ def insert_single_row_feature_type_table(engine: sa.engine, f_type, f_val) -> st
     return ret_str
 
 
-def insert_single_row_feature_type_table_classes(engine: sa.engine, f_type: str, f_val: str,
+def insert_single_row_feature_type_table_classes(f_type: str, f_val: str,
                                                  classes: dict[str, int]) -> str:
+    # TODO: config.feat_t_name
     class_names = ', '.join(classes.keys())
     class_vals = ', '.join([f":{key}" for key in classes.keys()])
     insert_query = sa.text(f"""
@@ -165,7 +163,7 @@ def insert_single_row_feature_type_table_classes(engine: sa.engine, f_type: str,
                                 ON CONFLICT (f_type, f_val) DO NOTHING
                             """)
     param_dict: dict[str, int | str] = {'f_type': f_type, 'f_val': f_val} | classes
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         result = connection.execute(insert_query, param_dict)
         connection.commit()
         if result.rowcount:
@@ -176,7 +174,8 @@ def insert_single_row_feature_type_table_classes(engine: sa.engine, f_type: str,
     return ret_str
 
 
-def insert_multiple_rows_feature_type_table(engine: sa.engine, rows: list[dict]) -> int:
+def insert_multiple_rows_feature_type_table(rows: list[dict]) -> int:
+    # TODO: config.feat_t_name
     if not rows:
         ans = 0
     else:
@@ -185,7 +184,7 @@ def insert_multiple_rows_feature_type_table(engine: sa.engine, rows: list[dict])
                                     VALUES (:f_type, :f_val) 
                                     ON CONFLICT (f_type, f_val) DO NOTHING
                                 """)
-        with engine.connect() as connection:
+        with config.engine.connect() as connection:
             with connection.begin():
                 try:
                     # Execute all inserts in one go:
@@ -200,7 +199,8 @@ def insert_multiple_rows_feature_type_table(engine: sa.engine, rows: list[dict])
     return ans
 
 
-def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: list[dict[str, int | str]]) -> int:
+def insert_multiple_rows_feature_type_table_classes(rows: list[dict[str, int | str]]) -> int:
+    # TODO: config.feat_t_name
     # make sure that every row has [f_type] and [f_var]
     if rows:
         for index, dct in list(enumerate(rows)):
@@ -216,7 +216,7 @@ def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: lis
                                     VALUES ({class_vals}) 
                                     ON CONFLICT (f_type, f_val) DO NOTHING
                                 """)
-        with engine.connect() as connection:
+        with config.engine.connect() as connection:
             with connection.begin():
                 try:
                     # Execute all inserts in one go:
@@ -231,7 +231,8 @@ def insert_multiple_rows_feature_type_table_classes(engine: sa.engine, rows: lis
     return ans
 
 
-def __create_result_table__(engine: sa.engine, class_names: list[str]) -> str:
+def __create_result_table__(class_names: list[str]) -> str:
+    # TODO: config.result_t_name
     classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
     create_table_query = sa.text(f"""
                                     CREATE TABLE IF NOT EXISTS "ResultTable"  (
@@ -241,7 +242,7 @@ def __create_result_table__(engine: sa.engine, class_names: list[str]) -> str:
                                         FOREIGN KEY (rule_id) REFERENCES "FeatureTypeTable"(rule_id)
                                     )
                                 """)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         try:
             connection.execute(create_table_query)
             connection.commit()
@@ -275,7 +276,8 @@ def calculate_total_lst(rows: list[dict[str, int]]) -> list[int]:
     return totals
 
 
-def insert_result_table(engine: sa.engine, rows: list[dict[str, int]]) -> int:
+def insert_result_table(rows: list[dict[str, int]]) -> int:
+    # TODO: config.result_t_name
     # [rows]: [rule_id], [class_a], [calss_b], ...
     if not rows:
         ans = 0
@@ -293,7 +295,7 @@ def insert_result_table(engine: sa.engine, rows: list[dict[str, int]]) -> int:
                                     INSERT INTO "ResultTable" ({column_names}) 
                                     VALUES ({column_vals})
                                 """)
-        with engine.connect() as connection:
+        with config.engine.connect() as connection:
             with connection.begin():
                 try:
                     # Execute all inserts in one go:
@@ -308,7 +310,8 @@ def insert_result_table(engine: sa.engine, rows: list[dict[str, int]]) -> int:
     return ans
 
 
-def select_result_table(class_names: list[str], conditions: list[dict[str, str]], engine: sa.engine):
+def select_result_table(class_names: list[str], conditions: list[dict[str, str]]):
+    # TODO: config.feat_t_name
     select_clause = f'''SELECT r.{', r.'.join(class_names)} FROM "FeatureTypeTable" ft
                         JOIN "ResultTable" r ON ft.rule_id = r.rule_id'''
     condition_clauses: list[str] = []
@@ -325,12 +328,12 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
             where_clause = " WHERE " + " OR ".join(condition_clauses)
     full_sql = select_clause + where_clause
     sql_text = sa.text(full_sql)
-    with engine.connect() as connection:
+    with config.engine.connect() as connection:
         result = connection.execute(sql_text)
         return result.fetchall()
 
 
-def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], engine: sa.engine) -> list[int]:
+def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str]) -> list[int]:
     # TODO: test + class column name
     # Create conditions list:
     path_conditions = []
@@ -340,7 +343,7 @@ def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], eng
     result: list[int] = []
     for cls in classes:
         class_condition: dict[str, str | brange.Range] = {"class": cls}
-        class_column = select_table(["class"], path_conditions+[class_condition], engine, "TrainingDataPrimaryTable")
+        class_column = select_table(["class"], path_conditions+[class_condition], config.training_t_name)
         if class_column:
             cls_sum = len(class_column)
             result.append(cls_sum)
