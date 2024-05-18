@@ -1,6 +1,5 @@
 import feature
 import brange
-from typing import Union
 
 
 class DataPath(object):
@@ -20,7 +19,7 @@ class DataPath(object):
     def get_size(self) -> int:
         return self.size
 
-    def get_path(self) -> list:
+    def get_path(self) -> list[tuple[feature.Feature, brange.Range | str]]:
         return self.path
 
 
