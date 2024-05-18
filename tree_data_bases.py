@@ -63,6 +63,7 @@ def select_table(columns: list[str], conditions: list[dict[str, str | br.Range]]
 
 
 def __create_primary_from_dataframe__(dataframe: pd.DataFrame, database_url: str) -> None:
+    # TODO: ["class"] column
     engine = connect_db(database_url)
     dataframe.to_sql(
         "TrainingDataPrimaryTable", con=engine, index=True, index_label='index', if_exists='replace')
@@ -329,20 +330,20 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
         return result.fetchall()
 
 
-def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], engine: sa.engine) -> list[int]:
+def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str], engine: sa.engine) -> list[dict[str, int]]:
     # TODO: test + class column name
     # Create conditions list:
-    conditions = []
+    path_conditions = []
     for fb in dt_path.get_path():
         cond = {fb[0].get_name(): fb[1]}
-        conditions.append(cond)
-    result: list[int] = []
+        path_conditions.append(cond)
+    result: list[dict[str, int]] = []
     for cls in classes:
-        condition: dict[str, str | brange.Range] = {"class": cls}
-        class_column = select_table(["class"], conditions+[condition], engine, "TrainingDataPrimaryTable")
+        class_condition: dict[str, str | brange.Range] = {"class": cls}
+        class_column = select_table(["class"], path_conditions+[class_condition], engine, "TrainingDataPrimaryTable")
         if class_column:
             cls_sum = len(class_column)
-            result.append(cls_sum)
+            result.append({cls: cls_sum})
     return result
 
 
