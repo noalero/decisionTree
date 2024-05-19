@@ -2,10 +2,9 @@ import feature
 
 
 class NumericalFeature(feature.Feature):
-    def __init__(self, name: str, values: list[float], n_breeds: int, serial_number: int) -> None:
-        feature.Feature.__init__(self, name, n_breeds, serial_number)
+    def __init__(self, name: str, n_breeds: int, serial_number: int) -> None:
+        super().__init__(name, n_breeds, serial_number)
         # self.__set_breeds__()
-
 
     def get_min_max_vals(self, rows) -> tuple[float, float]:
         min_val = max_val = rows[0][0]
