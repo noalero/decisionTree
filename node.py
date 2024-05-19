@@ -30,7 +30,9 @@ class Node(object):
         inf_gain = 0
         ret_feature = feat_list[0]
         for feature_ in feat_list:
-            cur_ig = tc.calc_feature_information_gain(feature_, self.datapath, classes)
+            feature_dir = (self.feature, breed_)
+            feature_dp = dataPath.DataPath(self.datapath.get_size(), self.datapath.get_path(), feature_dir)
+            cur_ig = tc.calc_feature_information_gain(feature_, feature_dp, classes)
             if cur_ig > inf_gain:
                 inf_gain = cur_ig
                 ret_feature = feature_
