@@ -1,4 +1,7 @@
-class Feature(object):
+from abc import ABC, abstractmethod
+
+
+class Feature(ABC):
     def __init__(self, name: str, n_breeds: int, serial_number: int) -> None:
         self.__set_name__(name)
         self.__set_n_breeds__(n_breeds)
@@ -14,7 +17,8 @@ class Feature(object):
     def __set_serial_number__(self, serial_num: int) -> None:
         self.serial_number = serial_num
 
-    def __set_breeds__(self) -> None:  # visitor pattern
+    @abstractmethod
+    def accept(self, visitor) -> None:  # visitor pattern
         pass
 
     def get_name(self) -> str:
@@ -28,4 +32,6 @@ class Feature(object):
 
     def get_breeds(self) -> list:
         return self.breeds
+
+
 

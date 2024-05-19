@@ -10,8 +10,10 @@ import brange
 import dataPath
 import feature
 import brange as br
+import feature_type
 
 
+# --------------------------- General --------------------------- #
 def connect_db(database_url: str) -> sa.engine:
     # TODO: delete?
     engine = sa.create_engine(database_url)
@@ -57,11 +59,20 @@ def select_table(columns: list[str], conditions: list[dict[str, str | br.Range]]
         return result.fetchall()
 
 
-def __create_primary_from_dataframe__(dataframe: pd.DataFrame) -> None:
-    # TODO: ["class"] column
-    dataframe.to_sql(
+# --------------------------- Primary Table --------------------------- #
+def __create_primary_from_dataframe__(dataframe: pd.DataFrame, class_index: int) -> None:
+    # TODO: test
+    new_data_frame = add_class_column(dataframe, class_index)
+    new_data_frame.to_sql(
         config.training_t_name, con=config.engine, index=True, index_label='index', if_exists='replace')
     config.engine.dispose()
+
+
+def add_class_column(dataframe: pd.DataFrame, class_index: int) -> pd.DataFrame:
+    # TODO: test
+    column_name = dataframe.columns[class_index]
+    new_data_frame = dataframe.rename(columns={column_name: "class"})
+    return new_data_frame
 
 
 def types_select_from_primary_table(columns: list[str],
@@ -88,10 +99,11 @@ def types_select_from_primary_table(columns: list[str],
         return result.fetchall()
 
 
+# --------------------------- FeatureType Table --------------------------- #
 def __create_feature_type_table__() -> str:
-    # TODO: config.feat_t_name
-    create_table_query = sa.text("""
-                                    CREATE TABLE IF NOT EXISTS "FeatureTypeTable"  (
+    # TODO: test
+    create_table_query = sa.text(f"""
+                                    CREATE TABLE IF NOT EXISTS {config.feature_t_name}  (
                                         rule_id SERIAL PRIMARY KEY,
                                         f_type VARCHAR(225) NOT NULL,
                                         f_val VARCHAR(255) NOT NULL,
@@ -111,10 +123,10 @@ def __create_feature_type_table__() -> str:
 
 
 def __create_feature_type_table_classes__(class_names: list[str]) -> str:
-    # TODO: config.feat_t_name
+    # TODO: test
     classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
     create_table_query = sa.text(f"""
-                                    CREATE TABLE IF NOT EXISTS "FeatureTypeTable"  (
+                                    CREATE TABLE IF NOT EXISTS {config.feature_t_name}  (
                                         rule_id SERIAL PRIMARY KEY,
                                         f_type VARCHAR(225) NOT NULL,
                                         f_val VARCHAR(255) NOT NULL,
@@ -135,9 +147,9 @@ def __create_feature_type_table_classes__(class_names: list[str]) -> str:
 
 
 def insert_single_row_feature_type_table(f_type, f_val) -> str:
-    # TODO: config.feat_t_name
-    insert_query = sa.text("""
-                                INSERT INTO "FeatureTypeTable" (f_type, f_val) 
+    # TODO: test
+    insert_query = sa.text(f"""
+                                INSERT INTO {config.feature_t_name} (f_type, f_val) 
                                 VALUES (:f_type, :f_val)
                                 ON CONFLICT (f_type, f_val) DO NOTHING
                             """)
@@ -154,11 +166,11 @@ def insert_single_row_feature_type_table(f_type, f_val) -> str:
 
 def insert_single_row_feature_type_table_classes(f_type: str, f_val: str,
                                                  classes: dict[str, int]) -> str:
-    # TODO: config.feat_t_name
+    # TODO: test
     class_names = ', '.join(classes.keys())
     class_vals = ', '.join([f":{key}" for key in classes.keys()])
     insert_query = sa.text(f"""
-                                INSERT INTO "FeatureTypeTable" (f_type, f_val, {class_names}) 
+                                INSERT INTO {config.feature_t_name} (f_type, f_val, {class_names}) 
                                 VALUES (:f_type, :f_val, {class_vals})
                                 ON CONFLICT (f_type, f_val) DO NOTHING
                             """)
@@ -175,12 +187,12 @@ def insert_single_row_feature_type_table_classes(f_type: str, f_val: str,
 
 
 def insert_multiple_rows_feature_type_table(rows: list[dict]) -> int:
-    # TODO: config.feat_t_name
+    # TODO: test
     if not rows:
         ans = 0
     else:
-        insert_query = sa.text("""
-                                    INSERT INTO "FeatureTypeTable" (f_type, f_val) 
+        insert_query = sa.text(f"""
+                                    INSERT INTO {config.feature_t_name} (f_type, f_val) 
                                     VALUES (:f_type, :f_val) 
                                     ON CONFLICT (f_type, f_val) DO NOTHING
                                 """)
@@ -200,7 +212,7 @@ def insert_multiple_rows_feature_type_table(rows: list[dict]) -> int:
 
 
 def insert_multiple_rows_feature_type_table_classes(rows: list[dict[str, int | str]]) -> int:
-    # TODO: config.feat_t_name
+    # TODO: test
     # make sure that every row has [f_type] and [f_var]
     if rows:
         for index, dct in list(enumerate(rows)):
@@ -212,7 +224,7 @@ def insert_multiple_rows_feature_type_table_classes(rows: list[dict[str, int | s
         class_names = ', '.join(rows[0].keys())
         class_vals = ', '.join([f":{key}" for key in rows[0].keys()])
         insert_query = sa.text(f"""
-                                    INSERT INTO "FeatureTypeTable" ({class_names}) 
+                                    INSERT INTO {config.feature_t_name} ({class_names}) 
                                     VALUES ({class_vals}) 
                                     ON CONFLICT (f_type, f_val) DO NOTHING
                                 """)
@@ -231,11 +243,12 @@ def insert_multiple_rows_feature_type_table_classes(rows: list[dict[str, int | s
     return ans
 
 
+# --------------------------- Result Table --------------------------- #
 def __create_result_table__(class_names: list[str]) -> str:
-    # TODO: config.result_t_name
+    # TODO: test
     classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
     create_table_query = sa.text(f"""
-                                    CREATE TABLE IF NOT EXISTS "ResultTable"  (
+                                    CREATE TABLE IF NOT EXISTS {config.result_t_name}  (
                                         rule_id INT PRIMARY KEY,
                                         {classes_query}
                                         total BIGINT NOT NULL,
@@ -277,7 +290,7 @@ def calculate_total_lst(rows: list[dict[str, int]]) -> list[int]:
 
 
 def insert_result_table(rows: list[dict[str, int]]) -> int:
-    # TODO: config.result_t_name
+    # TODO: test
     # [rows]: [rule_id], [class_a], [calss_b], ...
     if not rows:
         ans = 0
@@ -292,7 +305,7 @@ def insert_result_table(rows: list[dict[str, int]]) -> int:
         column_names = ', '.join(rows[0].keys())
         column_vals = ', '.join([f":{key}" for key in rows[0].keys()])
         insert_query = sa.text(f"""
-                                    INSERT INTO "ResultTable" ({column_names}) 
+                                    INSERT INTO {config.result_t_name} ({column_names}) 
                                     VALUES ({column_vals})
                                 """)
         with config.engine.connect() as connection:
@@ -311,8 +324,8 @@ def insert_result_table(rows: list[dict[str, int]]) -> int:
 
 
 def select_result_table(class_names: list[str], conditions: list[dict[str, str]]):
-    # TODO: config.feat_t_name
-    select_clause = f'''SELECT r.{', r.'.join(class_names)} FROM "FeatureTypeTable" ft
+    # TODO: test
+    select_clause = f'''SELECT r.{', r.'.join(class_names)} FROM {config.feature_t_name} ft
                         JOIN "ResultTable" r ON ft.rule_id = r.rule_id'''
     condition_clauses: list[str] = []
     where_clause = ""
@@ -333,8 +346,10 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
         return result.fetchall()
 
 
+# --------------------------- Object Related --------------------------- #
+
 def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str]) -> list[int]:
-    # TODO: test + class column name
+    # TODO: test
     # Create conditions list:
     path_conditions = []
     for fb in dt_path.get_path():
