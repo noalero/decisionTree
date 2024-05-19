@@ -22,6 +22,8 @@ class DecisionTree(object):
         self.__create_feature_types_list__()
         self.__set_root__()
 
+
+# TODO: deal with class column (should be a feature? not in the features list, special attribute?)
     def __set_n_breeds(self, n_breeds: int) -> None:
         self.n_breeds = n_breeds
 
