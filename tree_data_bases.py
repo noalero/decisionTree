@@ -10,7 +10,6 @@ import brange
 import dataPath
 import feature
 import brange as br
-import feature_type
 
 
 # --------------------------- General --------------------------- #

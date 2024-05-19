@@ -1,5 +1,4 @@
 import numpy as np
-import math
 import sqlalchemy as sa
 
 import brange
@@ -83,15 +82,14 @@ def calc_information_gain(breeds: list[list[int]], parent_classes: list[int]) ->
     return information_gain
 
 
-def calc_feature_breeds_amount(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str],
-                               engine: sa.angine) -> list[list[int]]:
+def calc_feature_breeds_amount(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str]) -> list[list[int]]:
     # TODO: test
     breeds: list[brange.Range | str] = feat.get_breeds()
     breeds_amounts: list[list[int]] = []
     for brd in breeds:
         new_dir = (feat, brd)
         new_dp = dataPath.DataPath(dp.get_size(), dp.path, new_dir)
-        amount = tdb.get_path_classes_amounts(new_dp, classes, engine)
+        amount = tdb.get_path_classes_amounts(new_dp, classes)
         breeds_amounts.append(amount)
     return breeds_amounts
 
@@ -103,10 +101,9 @@ def calc_feature_entropy(feat: feature.Feature, dp: dataPath.DataPath, classes: 
     return feat_breed_entropy
 
 
-def calc_feature_information_gain(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str],
-                                  engine: sa.angine) -> float:
+def calc_feature_information_gain(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str]) -> float:
     # TODO: test
-    breeds_amounts: list[list[int]] = calc_feature_breeds_amount(feat, dp, classes, engine)
-    parent_classes: list[int] = tdb.get_path_classes_amounts(dp, classes, engine)
+    breeds_amounts: list[list[int]] = calc_feature_breeds_amount(feat, dp, classes)
+    parent_classes: list[int] = tdb.get_path_classes_amounts(dp, classes)
     inf_gain = calc_information_gain(breeds_amounts, parent_classes)
     return inf_gain

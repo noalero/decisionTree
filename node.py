@@ -2,6 +2,7 @@ import brange
 import dataPath
 import feature
 import node
+import tree_calculations as tc
 
 
 class Node(object):
@@ -23,17 +24,23 @@ class Node(object):
     def __increase_num_of_children__(self) -> None:
         self.num_of_children += 1
 
-    def __choose_feature_for_child__(self, breed_: str | brange.Range, feat_list: list[feature.Feature])\
-            -> tuple[feature.Feature, float]:
-        # TODO
-        pass
+    def __choose_feature_for_child__(self, breed_: str | brange.Range, feat_list: list[feature.Feature],
+                                     classes: list[str]) -> tuple[feature.Feature, float]:
+        # TODO: test
+        inf_gain = 0
+        ret_feature = feat_list[0]
+        for feature_ in feat_list:
+            cur_ig = tc.calc_feature_information_gain(feature_, self.datapath, classes)
+            if cur_ig > inf_gain:
+                inf_gain = cur_ig
+                ret_feature = feature_
+        return ret_feature, inf_gain
 
     def __set_children__(self) -> None:
         self.children: list[node.Node] = []
 
     def __add_child__(self, breed_: str | brange.Range, child_feature: feature.Feature) -> None:
         # ToDo: test
-        # child_feature = self.__choose_feature_for_child__(breed_, feat_list)
         new_dir = (self.feature, breed_)
         child_data_path = dataPath.DataPath(self.datapath.get_size(), self.datapath.get_path(), new_dir)
         new_child = node.Node(child_feature, child_data_path)
@@ -61,7 +68,7 @@ class Node(object):
                 return child
         raise ValueError(f"Child of breed {breed_} not found")
 
-    def choose_next_for_children(self, feat_list: list[feature.Feature]) -> None:
+    def choose_next_for_children(self, feat_list: list[feature.Feature], classes: list[str]) -> None:
         # ToDo: test
         feat_dict: dict[feature.Feature, tuple[str | brange.Range, float]] = {}  # key: feature, value: breed, IG
         unchosen_breeds: list[str | brange.Range] = self.feature.get_breeds()
@@ -82,7 +89,7 @@ class Node(object):
                 # restart i:
                 i = 0
             i += 1
-            temp_feat, temp_ig = self.__choose_feature_for_child__(brd, curr_feature_list)
+            temp_feat, temp_ig = self.__choose_feature_for_child__(brd, curr_feature_list, classes)
             unchosen_breeds.remove(brd)
             if temp_feat in feat_dict:
                 old_breed, old_ig = feat_dict[temp_feat]
