@@ -27,4 +27,17 @@ class DataPath(object):
     def get_path(self) -> list[tuple[Feature, Breed]]:
         return self.path
 
+    def get_f_type(self) -> str:
+        # TODO: test
+        f_type = ""
+        for dir_ in self.path:
+            f_type += str(dir_[0].get_serial_number())
+        return f_type
+
+    def get_f_val(self) -> str:
+        # TODO: test
+        f_type = ""
+        for dir_ in self.path:
+            f_type += str(dir_[1].get_serial_number())
+        return f_type
 
