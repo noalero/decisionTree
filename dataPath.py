@@ -6,7 +6,7 @@ from breed import Breed
 
 class DataPath(object):
     def __init__(self, size, orgnl_path: list[tuple[Feature, Breed]],
-                 new_dir: Optional[tuple[Feature, Breed]]) -> None:
+                 new_dir: Optional[tuple[Feature, Breed]] = ()) -> None:
         self.__set_size__(size)
         if new_dir:
             self.__set_path__(orgnl_path, new_dir)
