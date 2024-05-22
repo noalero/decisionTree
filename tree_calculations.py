@@ -84,19 +84,19 @@ def calc_information_gain(breeds: list[list[int]], parent_classes: list[int]) ->
 
 def calc_feature_breeds_amount(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str]) -> list[list[int]]:
     # TODO: test
-    breeds: list[brange.Range | str] = feat.get_breeds()
+    breeds: dict[brange.Range | str, int] = feat.get_breeds()
     breeds_amounts: list[list[int]] = []
     for brd in breeds:
-        new_dir = (feat, brd)
+        new_dir = (feat, brd[0])
         new_dp = dataPath.DataPath(dp.get_size(), dp.path, new_dir)
         amount = tdb.get_path_classes_amounts(new_dp, classes)
         breeds_amounts.append(amount)
     return breeds_amounts
 
 
-def calc_feature_entropy(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str], engine: sa.angine) -> float:
+def calc_feature_entropy(feat: feature.Feature, dp: dataPath.DataPath, classes: list[str]) -> float:
     # TODO: test
-    breeds_amounts: list[list[int]] = calc_feature_breeds_amount(feat, dp, classes, engine)
+    breeds_amounts: list[list[int]] = calc_feature_breeds_amount(feat, dp, classes)
     feat_breed_entropy = e_parent_feature(breeds_amounts)
     return feat_breed_entropy
 
