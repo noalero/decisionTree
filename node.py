@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from brange import Range
 from dataPath import DataPath
 from feature import Feature
-from breed import  Breed
+from breed import Breed
 import tree_calculations as tc
 
 
@@ -39,13 +41,13 @@ class Node(object):
         return ret_feature, inf_gain
 
     def __set_children__(self) -> None:
-        self.children: list[node.Node] = []
+        self.children: list[Node] = []
 
-    def __add_child__(self, breed_: str | Range, child_feature: Feature) -> None:
+    def __add_child__(self, breed_: Breed, child_feature: Feature) -> None:
         # ToDo: test
         new_dir = (self.feature, breed_)
         child_data_path = DataPath(self.datapath.get_size(), self.datapath.get_path(), new_dir)
-        new_child = node.Node(child_feature, child_data_path)
+        new_child = Node(child_feature, child_data_path)
         self.children.append(new_child)
         self.__increase_num_of_children__()
 
@@ -58,10 +60,10 @@ class Node(object):
     def get_num_of_children(self) -> int:
         return self.num_of_children
 
-    def get_children(self) -> list[node.Node]:
+    def get_children(self) -> list[Node]:
         return self.children
 
-    def get_child(self, breed_: Breed) -> node.Node:
+    def get_child(self, breed_: Breed) -> Node:
         for child in self.children:
             dp = child.get_datapath()
             dp_size = dp.get_size()
