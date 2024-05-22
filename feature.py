@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from breed import Breed
 
 
 class Feature(ABC):
@@ -6,7 +7,7 @@ class Feature(ABC):
         self.__set_name__(name)
         self.__set_n_breeds__(n_breeds)
         self.__set_serial_number__(serial_number)
-        self.breeds = {}  # empty dictionary
+        self.breeds = set[Breed]()
 
     def __set_name__(self, name) -> None:
         self.name = name
@@ -30,7 +31,7 @@ class Feature(ABC):
     def get_serial_number(self) -> int:
         return self.serial_number
 
-    def get_breeds(self) -> dict:
+    def get_breeds(self) -> set[Breed]:
         return self.breeds
 
 

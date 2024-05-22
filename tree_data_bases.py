@@ -6,10 +6,11 @@ import psycopg2
 from psycopg2 import sql
 
 import config
-import brange
-import dataPath
-import feature
-import brange as br
+from brange import Range
+from dataPath import DataPath
+from feature import Feature
+from brange import Range
+from breed import Breed
 
 
 # --------------------------- General --------------------------- #
@@ -23,20 +24,29 @@ def __create_databases__(dataframe: pd.DataFrame) -> None:
     __create_primary_from_dataframe__(dataframe, config.database_url)
 
 
-def select_is_instance(conditions: dict[str, str | br.Range]) -> list[str]:
+def select_is_instance(conditions: dict[str, Breed]) -> list[str]:
     condition_clauses: list[str] = []
     for col in conditions.items():
-        if isinstance(col[1], br.Range):
-            con1 = f"{col[0]} >= {col[1].get_from_index()}"
-            con2 = f"{col[0]} <= {col[1].get_to_index()}"
-            condition_clauses.append(f"({con1} AND {con2})")
+        if isinstance(col[1], Range):
+            condition_clauses.append(select_range(col[1].get_name(), col[0]))
         elif isinstance(col[1], str):
-            con = f"{col[0]} = '{col[1]}'"
-            condition_clauses.append(con)
+            condition_clauses.append(select_str(col[1].get_name(), col[0]))
     return condition_clauses
 
 
-def select_table(columns: list[str], conditions: list[dict[str, str | br.Range]], name: str):
+def select_range(breed: Range, feat_name: str) -> str:
+    con1 = f"{feat_name} >= {breed.get_from_index()}"
+    con2 = f"{feat_name} <= {breed.get_to_index()}"
+    cond_clause = f"({con1} AND {con2})"
+    return cond_clause
+
+
+def select_str(breed: str, feat_name: str) -> str:
+    con = f"{feat_name} = '{breed}'"
+    return con
+
+
+def select_table(columns: list[str], conditions: list[dict[str, Breed]], name: str):
     select_clause = f'''SELECT {', '.join(columns)} FROM "{name}"'''
     condition_clauses: list[str] = []
     if conditions:
@@ -74,28 +84,28 @@ def add_class_column(dataframe: pd.DataFrame, class_index: int) -> pd.DataFrame:
     return new_data_frame
 
 
-def types_select_from_primary_table(columns: list[str],
-                                    conditions: dict[str, str | br.Range]):
-    select_clause = f'''SELECT {', '.join(columns)} FROM "TrainingDataPrimaryTable"'''
-    if conditions:
-        condition_clauses: list[str] = []  # [f"{col} = :{col}" for col in conditions]
-        for col in conditions.items():
-            if isinstance(col[1], br.Range):
-                con1 = f"{col[0]} >= {col[1].get_from_index()}"
-                condition_clauses.append(con1)
-                con2 = f"{col[0]} < {col[1].get_to_index()}"
-                condition_clauses.append(con2)
-            elif isinstance(col[1], str):
-                con = f"{col[0]} = '{col[1]}'"
-                condition_clauses.append(con)
-        where_clause = " WHERE " + " AND ".join(condition_clauses)
-    else:
-        where_clause = ""
-    full_sql = select_clause + where_clause
-    sql_text = sa.text(full_sql)
-    with config.engine.connect() as connection:
-        result = connection.execute(sql_text)
-        return result.fetchall()
+# def types_select_from_primary_table(columns: list[str],
+#                                     conditions: dict[str, Breed]):
+    #     select_clause = f'''SELECT {', '.join(columns)} FROM "TrainingDataPrimaryTable"'''
+    #     if conditions:
+    #         condition_clauses: list[str] = []  # [f"{col} = :{col}" for col in conditions]
+    #         for col in conditions.items():
+    #             if isinstance(col[1], Range):
+    #                 con1 = f"{col[0]} >= {col[1].get_from_index()}"
+    #                 condition_clauses.append(con1)
+    #                 con2 = f"{col[0]} < {col[1].get_to_index()}"
+    #                 condition_clauses.append(con2)
+    #             elif isinstance(col[1], str):
+    #                 con = f"{col[0]} = '{col[1]}'"
+    #                 condition_clauses.append(con)
+    #         where_clause = " WHERE " + " AND ".join(condition_clauses)
+    #     else:
+    #         where_clause = ""
+    #     full_sql = select_clause + where_clause
+    #     sql_text = sa.text(full_sql)
+    #     with config.engine.connect() as connection:
+    #         result = connection.execute(sql_text)
+    #         return result.fetchall()
 
 
 # --------------------------- FeatureType Table --------------------------- #
@@ -347,16 +357,16 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
 
 # --------------------------- Object Related --------------------------- #
 
-def get_path_classes_amounts(dt_path: dataPath.DataPath, classes: list[str]) -> list[int]:
+def get_path_classes_amounts(dt_path: DataPath, classes: list[str]) -> list[int]:
     # TODO: test
     # Create conditions list:
     path_conditions = []
     for fb in dt_path.get_path():
-        cond = {fb[0].get_name(): fb[1]}
+        cond = {fb[0].get_name(): fb[1].get_name()}
         path_conditions.append(cond)
     result: list[int] = []
     for cls in classes:
-        class_condition: dict[str, str | brange.Range] = {"class": cls}
+        class_condition: dict[str, str] = {"class": cls}
         class_column = select_table(["class"], path_conditions+[class_condition], config.training_t_name)
         if class_column:
             cls_sum = len(class_column)
