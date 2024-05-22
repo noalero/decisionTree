@@ -70,7 +70,6 @@ def select_table(columns: list[str], conditions: list[dict[str, Breed]], name: s
 
 # --------------------------- Primary Table --------------------------- #
 def __create_primary_from_dataframe__(dataframe: pd.DataFrame, class_index: int) -> None:
-    # TODO: test
     new_data_frame = add_class_column(dataframe, class_index)
     new_data_frame.to_sql(
         config.training_t_name, con=config.engine, index=True, index_label='index', if_exists='replace')
@@ -78,9 +77,8 @@ def __create_primary_from_dataframe__(dataframe: pd.DataFrame, class_index: int)
 
 
 def add_class_column(dataframe: pd.DataFrame, class_index: int) -> pd.DataFrame:
-    # TODO: test
-    column_name = dataframe.columns[class_index]
-    new_data_frame = dataframe.rename(columns={column_name: "class"})
+    column_name = dataframe.columns
+    new_data_frame = dataframe.rename(columns={column_name[class_index]: "class"})
     return new_data_frame
 
 
@@ -110,7 +108,6 @@ def add_class_column(dataframe: pd.DataFrame, class_index: int) -> pd.DataFrame:
 
 # --------------------------- FeatureType Table --------------------------- #
 def __create_feature_type_table__() -> str:
-    # TODO: test
     create_table_query = sa.text(f"""
                                     CREATE TABLE IF NOT EXISTS {config.feature_t_name}  (
                                         rule_id SERIAL PRIMARY KEY,
@@ -156,7 +153,6 @@ def __create_feature_type_table_classes__(class_names: list[str]) -> str:
 
 
 def insert_single_row_feature_type_table(f_type, f_val) -> str:
-    # TODO: test
     insert_query = sa.text(f"""
                                 INSERT INTO {config.feature_t_name} (f_type, f_val) 
                                 VALUES (:f_type, :f_val)
@@ -196,7 +192,6 @@ def insert_single_row_feature_type_table_classes(f_type: str, f_val: str,
 
 
 def insert_multiple_rows_feature_type_table(rows: list[dict]) -> int:
-    # TODO: test
     if not rows:
         ans = 0
     else:
@@ -254,14 +249,13 @@ def insert_multiple_rows_feature_type_table_classes(rows: list[dict[str, int | s
 
 # --------------------------- Result Table --------------------------- #
 def __create_result_table__(class_names: list[str]) -> str:
-    # TODO: test
     classes_query = f'''{' BIGINT NOT NULL, '.join(class_names)} BIGINT NOT NULL, '''
     create_table_query = sa.text(f"""
                                     CREATE TABLE IF NOT EXISTS {config.result_t_name}  (
                                         rule_id INT PRIMARY KEY,
                                         {classes_query}
                                         total BIGINT NOT NULL,
-                                        FOREIGN KEY (rule_id) REFERENCES "FeatureTypeTable"(rule_id)
+                                        FOREIGN KEY (rule_id) REFERENCES {config.feature_t_name}(rule_id)
                                     )
                                 """)
     with config.engine.connect() as connection:
@@ -299,7 +293,6 @@ def calculate_total_lst(rows: list[dict[str, int]]) -> list[int]:
 
 
 def insert_result_table(rows: list[dict[str, int]]) -> int:
-    # TODO: test
     # [rows]: [rule_id], [class_a], [calss_b], ...
     if not rows:
         ans = 0
@@ -344,7 +337,7 @@ def select_result_table(class_names: list[str], conditions: list[dict[str, str]]
                 # remove invalid dictionaries:
                 conditions.pop(index)
             else:
-                and_clause = f"""ft.f_type = '{dct['f_type']}' AND ft.f_val = '{dct['f_val']}'"""
+                and_clause = f"""(ft.f_type = '{dct['f_type']}' AND ft.f_val = '{dct['f_val']}')"""
                 condition_clauses.append(and_clause)
         if condition_clauses:
             where_clause = " WHERE " + " OR ".join(condition_clauses)
