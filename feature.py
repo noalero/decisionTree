@@ -6,7 +6,7 @@ class Feature(ABC):
         self.__set_name__(name)
         self.__set_n_breeds__(n_breeds)
         self.__set_serial_number__(serial_number)
-        self.breeds = set()
+        self.breeds = {}  # empty dictionary
 
     def __set_name__(self, name) -> None:
         self.name = name
@@ -30,7 +30,7 @@ class Feature(ABC):
     def get_serial_number(self) -> int:
         return self.serial_number
 
-    def get_breeds(self) -> list:
+    def get_breeds(self) -> dict:
         return self.breeds
 
 
