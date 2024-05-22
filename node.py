@@ -5,6 +5,7 @@ from dataPath import DataPath
 from feature import Feature
 from breed import Breed
 import tree_calculations as tc
+import tree_data_bases as tdb
 
 
 class Node(object):
@@ -47,9 +48,12 @@ class Node(object):
         # ToDo: test
         new_dir = (self.feature, breed_)
         child_data_path = DataPath(self.datapath.get_size(), self.datapath.get_path(), new_dir)
+        f_type = child_data_path.get_f_type()
+        f_val = child_data_path.get_f_val()
         new_child = Node(child_feature, child_data_path)
         self.children.append(new_child)
         self.__increase_num_of_children__()
+        tdb.insert_single_row_feature_type_table(f_type, f_val)
 
     def get_feature(self) -> Feature:
         return self.feature
