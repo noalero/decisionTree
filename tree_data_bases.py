@@ -28,7 +28,7 @@ def select_is_instance(conditions: dict[str, str | br.Range]) -> list[str]:
     for col in conditions.items():
         if isinstance(col[1], br.Range):
             con1 = f"{col[0]} >= {col[1].get_from_index()}"
-            con2 = f"{col[0]} < {col[1].get_to_index()}"
+            con2 = f"{col[0]} <= {col[1].get_to_index()}"
             condition_clauses.append(f"({con1} AND {con2})")
         elif isinstance(col[1], str):
             con = f"{col[0]} = '{col[1]}'"
