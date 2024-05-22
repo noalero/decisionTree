@@ -4,10 +4,12 @@ import numbers
 import config
 import visitor
 from visitor import ConcreteFeatureVisitor
-import feature
+from feature import Feature
 import numericalFeature
 import categoricalFeature
-import node
+from node import Node
+from dataPath import DataPath
+from breed import Breed
 
 
 class DecisionTree(object):
@@ -19,11 +21,12 @@ class DecisionTree(object):
         self.__set_n_breeds(n_breeds)
         self.__set_visitor__()
         self.__set_features__()
+        self.__set_classes__()
         self.__create_feature_types_list__()
         self.__set_root__()
 
+    # TODO: deal with class column (should be a feature? not in the features list, special attribute?)
 
-# TODO: deal with class column (should be a feature? not in the features list, special attribute?)
     def __set_n_breeds(self, n_breeds: int) -> None:
         self.n_breeds = n_breeds
 
@@ -39,13 +42,18 @@ class DecisionTree(object):
     def __set_features__(self) -> None:
         # ToDo: check [dataframe_columns] type
         dataframe_columns = self.dataframe.columns
-        self.features: list[feature.Feature] = []
+        self.features: list[Feature] = []
         serial_number = 1
         for col in dataframe_columns:
-            self.__add_feature__(col, serial_number)
-            serial_number += 1
+            if col != "class":
+                self.__add_feature__(col, serial_number)
+                serial_number += 1
 
-    def create_feature_type(self, column_name: str, serial_number: int) -> feature.Feature:
+    def __add_feature__(self, column_name: str, serial_number: int) -> None:
+        feat = self.create_feature(column_name, serial_number)
+        self.features.append(feat)
+
+    def create_feature(self, column_name: str, serial_number: int) -> Feature:
         val = self.dataframe[column_name].iloc[0]
         if isinstance(val, numbers.Number):
             feature_ = numericalFeature.NumericalFeature(column_name, self.n_breeds, serial_number)
@@ -56,25 +64,15 @@ class DecisionTree(object):
         feature_.accept(self.visitor)
         return feature_
 
-    @staticmethod
-    def get_features(self) -> list[feature.Feature]:
+    def get_features(self) -> list[Feature]:
         return self.features
 
-    def __add_feature__(self, column_name: str, serial_number: int) -> None:
-        feat = self.create_feature_type(column_name, serial_number)
-        self.features.append(feat)
+    def __set_root__(self, feature_: Feature) -> None:
+        empty_dp = DataPath(0, [])
+        self.root = Node(feature_, empty_dp)
 
-    def __set_root__(self) -> None:
-        # ToDo
-        # empty datapath, choose first feature
-        pass
-
-    @staticmethod
-    def get_root() -> node.Node:
-        # ToDo
-        fe, de = 0, 0
-        n = node.Node(fe, de)
-        return n   # self.root
+    def get_root(self) -> Node:
+        return self.root
 
     def __create_feature_types_list__(self) -> None:
         # TODO: type (each feature_type will be [data_path]?
@@ -101,12 +99,9 @@ class DecisionTree(object):
     def get_class_index(self) -> int:
         return self.class_index
 
+    def __set_classes__(self) -> None:
+        classes_feature = Feature("classes", self.n_breeds, -1)
+        self.classes = classes_feature
 
-
-
-
-
-
-
-
-
+    def get_classes(self) -> Feature:
+        return self.classes
