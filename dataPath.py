@@ -1,12 +1,17 @@
+from typing import  Optional
+
 from feature import Feature
 from breed import Breed
 
 
 class DataPath(object):
     def __init__(self, size, orgnl_path: list[tuple[Feature, Breed]],
-                 new_dir: tuple[Feature, Breed]) -> None:
+                 new_dir: Optional[tuple[Feature, Breed]]) -> None:
         self.__set_size__(size)
-        self.__set_path__(orgnl_path, new_dir)
+        if new_dir:
+            self.__set_path__(orgnl_path, new_dir)
+        else:
+            self.path = orgnl_path
 
     def __set_size__(self, size) -> None:
         self.size = size
